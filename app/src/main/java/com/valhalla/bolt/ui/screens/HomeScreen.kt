@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -20,9 +21,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +53,34 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val showRebootConfirmation by viewModel.showRebootConfirmation.collectAsStateWithLifecycle()
+    if (showRebootConfirmation) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelReboot() },
+            title = { Text("Confirm Reboot") },
+            text = { Text("Are you sure you want to reboot your device now?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.rebootDevice()
+                        viewModel.cancelReboot()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("REBOOT")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelReboot() }) {
+                    Text("CANCEL")
+                }
+            }
+        )
+    }
+
 
     // File picker launcher
     val filePicker = rememberLauncherForActivityResult(
@@ -110,7 +141,7 @@ fun HomeScreen(
                     uiState = uiState,
                     onPickZip = { filePicker.launch(arrayOf("application/zip")) },
                     onFlash = { viewModel.flashKernel() },
-                    onReboot = { viewModel.rebootDevice() }, // New reboot callback
+                    onReboot = { viewModel.confirmReboot() }, // New reboot callback
                     modifier = Modifier.weight(1f)
                 )
 
