@@ -22,7 +22,8 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 
 ### Screenshots
 
-### [▶️ Watch Demo](https://youtube.com/shorts/21q9h6YFR3Y?feature=share)<table>
+### [▶️ Watch Demo](https://youtube.com/shorts/21q9h6YFR3Y?feature=share)
+<table>
   <tr>
     <td><img src="screenshots/1.jpg" alt="Screenshot 1" width="200"/></td>
     <td><img src="screenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
@@ -31,6 +32,7 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
     <td><img src="screenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
     <td><img src="screenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
   </tr>
+</table>
 
 ### Warnings
 
