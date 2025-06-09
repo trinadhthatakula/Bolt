@@ -148,7 +148,7 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
 
                 // 5. Verify success using "done" marker
                 if (File(workDir, "done").exists()) {
-                    val outputSummary = "Flashing successful at ${getCurrentTime()} - Reboot required"
+                    val outputSummary = "Flashing successful - Reboot required"
                     _uiState.update {
                         it.copy(
                             flashingState = FlashingState.SUCCESS_REBOOT_NEEDED,

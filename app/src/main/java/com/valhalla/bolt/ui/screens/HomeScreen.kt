@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -70,12 +71,12 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("REBOOT")
+                    Text("Reboot Now")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelReboot() }) {
-                    Text("CANCEL")
+                    Text("Cancel")
                 }
             }
         )
@@ -101,61 +102,71 @@ fun HomeScreen(
     }
     Column(
         modifier = modifier
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(16.dp)
     ) {
-        // Root status display
-        when {
-            !uiState.isRootCheckComplete -> {
-                ContainedLoadingIndicator()
-                Spacer(Modifier.height(16.dp))
-                Text("Checking root access...")
-            }
+        Text(
+            text = "Bolt Kernel Flasher",
+            style = MaterialTheme.typography.titleLargeEmphasized,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .fillMaxWidth()
+        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            when {
+                !uiState.isRootCheckComplete -> {
+                    ContainedLoadingIndicator()
+                    Spacer(Modifier.height(16.dp))
+                    Text("Checking root access...")
+                }
 
-            !uiState.isRootAvailable -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Root access not available",
-                        color = Color.Red,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                !uiState.isRootAvailable -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Root access not available",
+                            color = Color.Red,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            onClick = { viewModel.checkRootAvailability() },
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.restart_alt_24px),
+                                "Retry"
+                            )
+                        }
+                    }
+
+                    Text("This app requires root access to flash kernels")
+                }
+
+                else -> {
+                    // Main content when root is available
+                    KernelFlasherContent(
+                        uiState = uiState,
+                        onPickZip = { filePicker.launch(arrayOf("application/zip")) },
+                        onFlash = { viewModel.flashKernel() },
+                        onReboot = { viewModel.confirmReboot() }, // New reboot callback
+                        modifier = Modifier.weight(1f)
                     )
-                    IconButton(
-                        onClick = { viewModel.checkRootAvailability() },
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.restart_alt_24px),
-                            "Retry"
+
+                    if (uiState.flashedFiles.isNotEmpty()) {
+                        FlashHistoryList(
+                            flashedFiles = uiState.flashedFiles,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1.5f)
                         )
                     }
                 }
-
-                Text("This app requires root access to flash kernels")
-            }
-
-            else -> {
-                // Main content when root is available
-                KernelFlasherContent(
-                    uiState = uiState,
-                    onPickZip = { filePicker.launch(arrayOf("application/zip")) },
-                    onFlash = { viewModel.flashKernel() },
-                    onReboot = { viewModel.confirmReboot() }, // New reboot callback
-                    modifier = Modifier.weight(1f)
-                )
-
-                if(uiState.flashedFiles.isNotEmpty()) {
-                    // History section
-                    FlashHistoryList(
-                        flashedFiles = uiState.flashedFiles,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-                }
             }
         }
+
     }
 
 }
@@ -272,7 +283,9 @@ fun FlashHistoryList(
         if (flashedFiles.isEmpty()) {
             Text("No flash history available", modifier = Modifier.padding(top = 8.dp))
         } else {
-            LazyColumn(modifier = Modifier.padding(top = 8.dp).weight(1f)) {
+            LazyColumn(modifier = Modifier
+                .padding(top = 8.dp)
+                .weight(1f)) {
                 items(flashedFiles) { file ->
                     HistoryItem(file = file)
                 }
@@ -281,6 +294,7 @@ fun FlashHistoryList(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HistoryItem(file: FlashedFile) {
     Card(
@@ -292,17 +306,22 @@ fun HistoryItem(file: FlashedFile) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = file.fileName,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1
                 )
-                Text(
-                    text = if (file.success) "✓" else "✗",
+                /*Text(
+                    text = if (file.success) " ✓ " else " ✗ ",
                     color = if (file.success) Color.Green else Color.Red,
                     fontSize = 20.sp
-                )
+                )*/
             }
 
-            Text(file.flashDate, fontSize = 12.sp, color = Color.Gray)
+            Text(
+                file.flashDate,
+                style = MaterialTheme.typography.bodyMediumEmphasized,
+                color = Color.Gray
+            )
             Spacer(Modifier.height(8.dp))
             Text(file.outputSummary, fontSize = 14.sp)
         }
