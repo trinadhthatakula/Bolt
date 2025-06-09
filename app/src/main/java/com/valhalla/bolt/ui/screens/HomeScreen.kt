@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -104,13 +105,20 @@ fun HomeScreen(
         modifier = modifier
             .padding(16.dp)
     ) {
-        Text(
-            text = "Bolt Kernel Flasher",
-            style = MaterialTheme.typography.titleLargeEmphasized,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth()
-        )
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Icon(
+                painterResource(R.drawable.launcher_foreground),
+                "Bolt Icon",
+                modifier = Modifier.size(36.dp)
+            )
+            Text(
+                text = "Bolt Kernel Flasher",
+                style = MaterialTheme.typography.titleLargeEmphasized,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

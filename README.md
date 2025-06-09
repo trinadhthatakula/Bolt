@@ -18,6 +18,19 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 - Simple and fast kernel flashing
 - Supports AnyKernel zips
 
+### Screenshots
+
+<table>
+  <tr>
+    <td><img src="screenshots/1.jpg" alt="Screenshot 1" width="200"/></td>
+    <td><img src="screenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
+    <td><img src="screenshots/3.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="screenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="screenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="screenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
+  </tr>
+</table>
+
 ### Warnings
 
 - **Use at your own risk.** Flashing kernels can potentially brick your device.
