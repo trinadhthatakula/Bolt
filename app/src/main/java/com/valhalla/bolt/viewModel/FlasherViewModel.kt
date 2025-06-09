@@ -18,9 +18,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.zip.ZipFile
 
 class FlasherViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -35,6 +37,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
     private val historyFile by lazy {
         File(getApplication<Application>().filesDir, "flash_history.txt")
     }
+
+    // New state for reboot confirmation
+    private val _showRebootConfirmation = MutableStateFlow(false)
+    val showRebootConfirmation: StateFlow<Boolean> = _showRebootConfirmation.asStateFlow()
 
     init {
         checkRootAvailability()
@@ -108,7 +114,7 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
         return@withContext destFile.absolutePath
     }
 
-    fun flashKernel(onResult: ((Shell.Result) -> Unit)? = null) {
+    fun flashKernel() {
         val zipPath = _uiState.value.copiedZipPath ?: run {
             _uiState.update {
                 it.copy(
@@ -126,25 +132,27 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
                 // Create working directory
                 val workDir = createWorkDirectory()
 
-                // Extract zip
-                extractZip(zipPath, workDir)
+                // 1. Export mkbootfs from assets
+                exportMkbootfs(workDir)
+
+                // 2. Extract update-binary
+                val updateBinary = extractUpdateBinary(zipPath, workDir)
+
+                // 3. Patch update-binary
+                patchUpdateBinary(updateBinary, workDir)
 
                 _uiState.update { it.copy(flashingState = FlashingState.FLASHING) }
 
-                // Execute anykernel.sh script
-                val result = executeAnykernelScript(workDir)
+                // 4. Execute the patched update-binary
+                val flashOutput = executeUpdateBinary(updateBinary, zipPath, workDir)
 
-                if(result is Shell.Result.Error) {
-                    throw Exception("Command execution failed: ${result.exception.message}")
-                }
-
-                // Process result
-                if ((result as Shell.Result.Success).exitCode == 0) {
+                // 5. Verify success using "done" marker
+                if (File(workDir, "done").exists()) {
                     val outputSummary = "Flashing successful at ${getCurrentTime()} - Reboot required"
                     _uiState.update {
                         it.copy(
-                            flashingState = FlashingState.SUCCESS_REBOOT_NEEDED, // Use new state
-                            flashOutput = result.stdout,
+                            flashingState = FlashingState.SUCCESS_REBOOT_NEEDED,
+                            flashOutput = flashOutput,
                             flashedFiles = it.flashedFiles + FlashedFile(
                                 fileName = File(zipPath).name,
                                 flashDate = getCurrentTime(),
@@ -154,29 +162,15 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
                         )
                     }
                     saveToHistory(File(zipPath).name, outputSummary)
-                    onResult?.invoke(result)
                 } else {
-                    val errorSummary = "Flashing failed: ${result.stderr.take(100)}..."
-                    _uiState.update {
-                        it.copy(
-                            flashingState = FlashingState.ERROR,
-                            flashOutput = result.stderr,
-                            errorMessage = "Flashing failed (code ${result.exitCode})",
-                            flashedFiles = it.flashedFiles + FlashedFile(
-                                fileName = File(zipPath).name,
-                                flashDate = getCurrentTime(),
-                                success = false,
-                                outputSummary = errorSummary
-                            )
-                        )
-                    }
-                    saveToHistory(File(zipPath).name, errorSummary)
+                    throw IOException("Flashing failed - done marker not found")
                 }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
                         flashingState = FlashingState.ERROR,
-                        errorMessage = "Flashing error: ${e.message}"
+                        errorMessage = "Flashing error: ${e.message}",
+                        flashOutput = e.stackTraceToString()
                     )
                 }
             }
@@ -187,69 +181,124 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
         val workDir = File(getApplication<Application>().cacheDir, "ak3_work")
         workDir.deleteRecursively()
         workDir.mkdirs()
-        return@withContext workDir
+        workDir
     }
 
-    private suspend fun extractZip(zipPath: String, destDir: File) {
-        // Implement zip extraction using ZipInputStream
-        // Omitted for brevity, but would use:
-        // ZipInputStream(FileInputStream(zipPath)).use { zip -> ... }
-        // Update progress if needed
+    private suspend fun exportMkbootfs(workDir: File) = withContext(Dispatchers.IO) {
+        val mkbootfs = File(workDir, "mkbootfs")
+        getApplication<Application>().assets.open("mkbootfs").use { input ->
+            mkbootfs.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        // Set executable permissions
+        rootShell.runCommand("chmod 755 ${mkbootfs.absolutePath}")
+    }
+
+    private suspend fun extractUpdateBinary(zipPath: String, destDir: File): File {
+        return withContext(Dispatchers.IO) {
+            val updateBinary = File(destDir, "update-binary")
+            ZipFile(zipPath).use { zip ->
+                val entry = zip.entries().asSequence().find {
+                    it.name.endsWith("update-binary")
+                } ?: throw IOException("update-binary not found in zip")
+
+                zip.getInputStream(entry).use { input ->
+                    updateBinary.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            }
+            // Set executable permissions
+            rootShell.runCommand("chmod 755 ${updateBinary.absolutePath}")
+            updateBinary
+        }
+    }
+
+    private suspend fun patchUpdateBinary(updateBinary: File, workDir: File) {
+        withContext(Dispatchers.IO) {
+            // Insert mkbootfs copy command before chmod
+            val mkbootfsPath = File(workDir, "mkbootfs").absolutePath
+            val sedCommand = """
+                sed -i '/${"$"}BB chmod -R 755 tools bin;/i cp -f "$mkbootfsPath" ${"$"}AKHOME/tools;' ${updateBinary.absolutePath}
+            """.trimIndent()
+
+            rootShell.runCommand(sedCommand)
+        }
+    }
+
+    private suspend fun executeUpdateBinary(updateBinary: File, zipPath: String, workDir: File): String {
+        return withContext(Dispatchers.IO) {
+            val commands = listOf(
+                "export POSTINSTALL=${workDir.absolutePath}",
+                "sh ${updateBinary.absolutePath} 3 1 \"$zipPath\"",
+                "touch ${workDir.absolutePath}/done"
+            )
+
+            val results = rootShell.runCommand(*commands.toTypedArray())
+
+            // Combine all command outputs
+            results.joinToString("\n") { result ->
+                when (result) {
+                    is Shell.Result.Success -> result.stdout + result.stderr
+                    is Shell.Result.Error -> "ERROR: ${result.exception.message}"
+                }
+            }
+        }
+    }
+
+    // Reboot functions
+    fun confirmReboot() {
+        _showRebootConfirmation.value = true
+    }
+
+    fun cancelReboot() {
+        _showRebootConfirmation.value = false
     }
 
     fun rebootDevice() {
         viewModelScope.launch {
             _uiState.update { it.copy(flashingState = FlashingState.REBOOTING) }
 
-            val result = rootShell.runCommand("reboot").firstOrNull()
+            val commands = arrayOf(
+                "reboot",
+                "svc power reboot",
+                "busybox reboot",
+                "setprop ctl.restart zygote",
+                "am restart"
+            )
 
-            when (result) {
-                is Shell.Result.Success -> {
-                    if (result.exitCode == 0) {
-                        // Reboot command sent successfully
-                        _uiState.update {
-                            it.copy(
-                                flashingState = FlashingState.REBOOTING,
-                                flashOutput = "Device rebooting..."
-                            )
-                        }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                flashingState = FlashingState.ERROR,
-                                errorMessage = "Reboot failed with code ${result.exitCode}",
-                                flashOutput = result.stderr
-                            )
+            var rebootSuccess = false
+            var lastError = ""
+
+            for (cmd in commands) {
+                val result = rootShell.runCommand(cmd).firstOrNull()
+                when (result) {
+                    is Shell.Result.Success -> {
+                        if (result.exitCode == 0) {
+                            rebootSuccess = true
+                            break
+                        } else {
+                            lastError = "Exit code ${result.exitCode}: ${result.stderr}"
                         }
                     }
-                }
-                is Shell.Result.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            flashingState = FlashingState.ERROR,
-                            errorMessage = "Reboot error: ${result.exception.message}",
-                            flashOutput = "Command: ${result.command}\n${result.exception.stackTraceToString()}"
-                        )
+                    is Shell.Result.Error -> {
+                        lastError = result.exception.message ?: "Unknown error"
                     }
+                    else -> lastError = "Unknown result type"
                 }
-                else -> {
-                    _uiState.update {
-                        it.copy(
-                            flashingState = FlashingState.ERROR,
-                            errorMessage = "Unknown reboot error"
-                        )
-                    }
+            }
+
+            if (!rebootSuccess) {
+                _uiState.update {
+                    it.copy(
+                        flashingState = FlashingState.ERROR,
+                        errorMessage = "Reboot failed",
+                        flashOutput = "Tried multiple methods:\n$lastError"
+                    )
                 }
             }
         }
-    }
-
-    private suspend fun executeAnykernelScript(workDir: File): Shell.Result {
-        return rootShell.runCommand(
-            "cd ${workDir.absolutePath}",
-            "chmod +x anykernel.sh",
-            "./anykernel.sh"
-        ).first() // We only run one command sequence
     }
 
     private fun getCurrentTime(): String {
