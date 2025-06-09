@@ -1,0 +1,36 @@
+<b>Bolt Kernel Flasher</b> is a modern Android app designed to make flashing AnyKernel zips on supported devices simple and safe. Built entirely with Kotlin, it features a sleek Material 3 Design and a Jetpack Compose UI for a seamless user experience.
+
+<br><br>
+<b>Key Features:</b>
+<ul>
+  <li>100% Kotlin codebase</li>
+  <li>Material 3 Design</li>
+  <li>Jetpack Compose UI</li>
+  <li>Simple and fast kernel flashing</li>
+  <li>Supports AnyKernel zips</li>
+  <li>Minimal APK size (around 1.0 MB)</li>
+  <li>Fully reproducible, copylefted libre software (GPLv3.0)</li>
+</ul>
+
+<br>
+<b>How It Works:</b>
+<ul>
+  <li>Select an AnyKernel zip from your device</li>
+  <li>Flash it to your device with a single tap</li>
+  <li>Enjoy a modern, intuitive interface</li>
+</ul>
+
+<br>
+<b>Warnings:</b>
+<ul>
+  <li><b>Use at your own risk.</b> Flashing kernels can potentially brick your device.</li>
+  <li><b>Backup recommended:</b> Always back up your data and current boot image before proceeding.</li>
+  <li><b>Check compatibility:</b> Ensure the kernel format and boot image compression match your device requirements. Mismatches may cause bootloops.</li>
+  <li><b>Device warranty:</b> Flashing custom kernels may void your device warranty.</li>
+  <li><b>Data loss:</b> Incorrect usage can result in data loss or device malfunction.</li>
+  <li><b>No liability:</b> The developers are not responsible for any damage caused by using this tool.</li>
+</ul>
+
+<br>
+<b>License:</b><br>
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
