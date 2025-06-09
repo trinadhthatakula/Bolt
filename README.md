@@ -17,6 +17,7 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 - Jetpack Compose UI
 - Simple and fast kernel flashing
 - Supports AnyKernel zips
+- Smallest APK size possible (around 1.0 MB)
 
 ### Screenshots
 
