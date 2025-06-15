@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.valhalla.bolt.model.FlashedFile
 import com.valhalla.bolt.model.FlashingState
 import com.valhalla.bolt.model.HomeUiState
+import com.valhalla.bolt.model.ProcessingStep
 import com.valhalla.bolt.model.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
             val isRootAvailable = Shell.isRootAvailable()
             _uiState.update {
                 it.copy(
+                    processingSteps = it.processingSteps + ProcessingStep(
+                        title = "Checking Root Access",
+                        description = if (isRootAvailable) "Root access is available" else "Root access is not available"
+                    ),
                     isRootAvailable = isRootAvailable,
                     isRootCheckComplete = true
                 )
@@ -64,35 +69,101 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun pickZipFile(uri: Uri) {
-        _uiState.update { it.copy(flashingState = FlashingState.PICKING_ZIP) }
+        _uiState.update {
+            it.copy(
+                processingSteps = it.processingSteps + ProcessingStep(
+                    title = "Picking Kernel Zip",
+                    description = "Selected file: ${uri.path ?: uri.toString()}"
+                ),
+                pickedZipUri = uri,
+                flashingState = FlashingState.PICKING_ZIP
+            )
+        }
 
         viewModelScope.launch {
             try {
-                // Update state to show copying progress
                 _uiState.update {
                     it.copy(
-                        pickedZipUri = uri,
-                        flashingState = FlashingState.COPYING_ZIP
+                        processingSteps = it.processingSteps + ProcessingStep(
+                            title = "Copying Kernel Zip",
+                            description = "Copying selected zip to app storage"
+                        ),
+                        flashingState = FlashingState.COPYING_ZIP,
+                        isZipValidating = true // Show validating state
                     )
                 }
 
-                // Copy file to app storage
                 val copiedPath = copyZipToLocal(uri)
 
-                // Update state with new path
+                // Set validating state
+                _uiState.update { it.copy(
+                    processingSteps = it.processingSteps + ProcessingStep(
+                        title = "Validating Kernel Zip",
+                        description = "Checking if the selected zip is a valid AnyKernel3 zip"
+                    ),
+                    flashingState = FlashingState.VALIDATING_ZIP
+                ) }
+
+                if (!isValidAnyKernelZip(copiedPath)) {
+                    _uiState.update {
+                        it.copy(
+                            processingSteps = it.processingSteps + ProcessingStep(
+                                title = "Validation Failed",
+                                description = "The selected zip does not contain required AnyKernel3 files"
+                            ),
+                            flashingState = FlashingState.ERROR,
+                            errorMessage = "Invalid AnyKernel3 zip",
+                            flashOutput = "Selected file doesn't contain required AnyKernel3 files",
+                            isZipValidating = false,
+                            isValidZip = false
+                        )
+                    }
+                    return@launch
+                }
+
                 _uiState.update {
                     it.copy(
+                        processingSteps = it.processingSteps + listOf(ProcessingStep(
+                            title = "Validation Successful",
+                            description = "The selected zip is a valid AnyKernel3 zip"
+                        )),
                         copiedZipPath = copiedPath,
-                        flashingState = FlashingState.IDLE
+                        flashingState = FlashingState.IDLE,
+                        isZipValidating = false,
+                        isValidZip = true
                     )
                 }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
                         flashingState = FlashingState.ERROR,
-                        errorMessage = "Failed to copy file: ${e.message}"
+                        errorMessage = "Failed to process file: ${e.message}",
+                        isZipValidating = false
                     )
                 }
+            }
+        }
+    }
+
+    private suspend fun isValidAnyKernelZip(zipPath: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                ZipFile(zipPath).use { zip ->
+                    // Check for root-level anykernel.sh
+                    val hasAnyKernelSh = zip.entries().asSequence().any {
+                        it.name.equals("anykernel.sh", ignoreCase = true)
+                    }
+
+                    // Check for update-binary in META-INF
+                    val hasUpdateBinary = zip.entries().asSequence().any {
+                        it.name.lowercase().endsWith("meta-inf/com/google/android/update-binary")
+                    }
+
+                    // Valid if either exists
+                    hasAnyKernelSh || hasUpdateBinary
+                }
+            } catch (e: Exception) {
+                false
             }
         }
     }
@@ -118,6 +189,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
         val zipPath = _uiState.value.copiedZipPath ?: run {
             _uiState.update {
                 it.copy(
+                    processingSteps = it.processingSteps + ProcessingStep(
+                        title = "Flashing Error",
+                        description = "No kernel zip file selected"
+                    ),
                     flashingState = FlashingState.ERROR,
                     errorMessage = "No kernel file selected"
                 )
@@ -127,6 +202,22 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
 
         viewModelScope.launch {
             try {
+                // Validate zip before proceeding
+                if (!isValidAnyKernelZip(zipPath)) {
+                    _uiState.update {
+                        it.copy(
+                            processingSteps = it.processingSteps + ProcessingStep(
+                                title = "Flashing Error",
+                                description = "Selected file is not a valid AnyKernel3 zip"
+                            ),
+                            flashingState = FlashingState.ERROR,
+                            errorMessage = "Invalid AnyKernel3 zip file",
+                            flashOutput = "Selected file doesn't contain required AnyKernel3 files"
+                        )
+                    }
+                    return@launch
+                }
+
                 _uiState.update { it.copy(flashingState = FlashingState.EXTRACTING) }
 
                 // Create working directory
@@ -151,6 +242,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
                     val outputSummary = "Flashing successful - Reboot required"
                     _uiState.update {
                         it.copy(
+                            processingSteps = it.processingSteps + ProcessingStep(
+                                title = "Flashing Completed",
+                                description = outputSummary
+                            ),
                             flashingState = FlashingState.SUCCESS_REBOOT_NEEDED,
                             flashOutput = flashOutput,
                             flashedFiles = it.flashedFiles + FlashedFile(
@@ -168,6 +263,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
+                        processingSteps = it.processingSteps + ProcessingStep(
+                            title = "Flashing Error",
+                            description = "An error occurred during flashing: ${e.message}"
+                        ),
                         flashingState = FlashingState.ERROR,
                         errorMessage = "Flashing error: ${e.message}",
                         flashOutput = e.stackTraceToString()
@@ -178,6 +277,14 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun createWorkDirectory(): File = withContext(Dispatchers.IO) {
+        _uiState.update {
+            it.copy(
+                processingSteps = it.processingSteps + ProcessingStep(
+                    title = "Creating Work Directory",
+                    description = "Preparing working directory for flashing process"
+                )
+            )
+        }
         val workDir = File(getApplication<Application>().cacheDir, "ak3_work")
         workDir.deleteRecursively()
         workDir.mkdirs()
@@ -186,6 +293,14 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
 
     private suspend fun exportMkbootfs(workDir: File) = withContext(Dispatchers.IO) {
         val mkbootfs = File(workDir, "mkbootfs")
+        _uiState.update {
+            it.copy(
+                processingSteps = it.processingSteps + ProcessingStep(
+                    title = "Exporting mkbootfs",
+                    description = "Extracting mkbootfs binary from assets"
+                )
+            )
+        }
         getApplication<Application>().assets.open("mkbootfs").use { input ->
             mkbootfs.outputStream().use { output ->
                 input.copyTo(output)
@@ -217,6 +332,14 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
 
     private suspend fun patchUpdateBinary(updateBinary: File, workDir: File) {
         withContext(Dispatchers.IO) {
+            _uiState.update {
+                it.copy(
+                    processingSteps = it.processingSteps + ProcessingStep(
+                        title = "Patching update-binary",
+                        description = "Inserting mkbootfs copy command into update-binary"
+                    )
+                )
+            }
             // Insert mkbootfs copy command before chmod
             val mkbootfsPath = File(workDir, "mkbootfs").absolutePath
             val sedCommand = """
@@ -234,14 +357,26 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
                 "sh ${updateBinary.absolutePath} 3 1 \"$zipPath\"",
                 "touch ${workDir.absolutePath}/done"
             )
+            _uiState.update {
+                it.copy(
+                    processingSteps = it.processingSteps + ProcessingStep(
+                        title = "Executing update-binary",
+                        description = "Running patched update-binary to flash kernel"
+                    )
+                )
+            }
 
             val results = rootShell.runCommand(*commands.toTypedArray())
 
             // Combine all command outputs
             results.joinToString("\n") { result ->
                 when (result) {
-                    is Shell.Result.Success -> result.stdout + result.stderr
-                    is Shell.Result.Error -> "ERROR: ${result.exception.message}"
+                    is Shell.Result.Success -> {
+                        result.stdout + result.stderr
+                    }
+                    is Shell.Result.Error -> {
+                        "ERROR: ${result.exception.message}"
+                    }
                 }
             }
         }
@@ -292,6 +427,10 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
             if (!rebootSuccess) {
                 _uiState.update {
                     it.copy(
+                        processingSteps = it.processingSteps + ProcessingStep(
+                            title = "Reboot Failed",
+                            description = "Failed to reboot device using all methods"
+                        ),
                         flashingState = FlashingState.ERROR,
                         errorMessage = "Reboot failed",
                         flashOutput = "Tried multiple methods:\n$lastError"
@@ -325,7 +464,13 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
                 }
             }
 
-            _uiState.update { it.copy(flashedFiles = history) }
+            _uiState.update { it.copy(
+                processingSteps = it.processingSteps + ProcessingStep(
+                    title = "Loading Flash History",
+                    description = "Loaded ${history.size} flashed files from history"
+                ),
+                flashedFiles = history
+            ) }
         }
     }
 
@@ -340,6 +485,7 @@ class FlasherViewModel(application: Application) : AndroidViewModel(application)
     fun resetState() {
         _uiState.update {
             it.copy(
+                processingSteps = emptyList(),
                 flashingState = FlashingState.IDLE,
                 errorMessage = null,
                 flashOutput = ""

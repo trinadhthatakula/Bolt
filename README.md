@@ -25,12 +25,12 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 ### [▶️ Watch Demo](https://youtube.com/shorts/21q9h6YFR3Y?feature=share)
 <table>
   <tr>
-    <td><img src="screenshots/1.jpg" alt="Screenshot 1" width="200"/></td>
-    <td><img src="screenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
-    <td><img src="screenshots/3.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="screenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="screenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="screenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Screenshot 1" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
   </tr>
 </table>
 

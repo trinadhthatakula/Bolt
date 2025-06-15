@@ -7,6 +7,7 @@ enum class FlashingState {
     IDLE,
     PICKING_ZIP,
     COPYING_ZIP,
+    VALIDATING_ZIP,
     EXTRACTING,
     FLASHING,
     SUCCESS,            // Flashing completed but no reboot needed?
@@ -17,6 +18,8 @@ enum class FlashingState {
 
 // Main UI state holder
 data class HomeUiState(
+    val isZipValidating: Boolean = false, // Zip validating
+    val isValidZip: Boolean = true,      // Whether the picked zip is valid
     val isRootAvailable: Boolean = false,    // Root access status
     val isRootCheckComplete: Boolean = false, // Whether root check has finished
     val flashingState: FlashingState = FlashingState.IDLE,
@@ -24,7 +27,9 @@ data class HomeUiState(
     val copiedZipPath: String? = null,        // Local path after copying
     val flashOutput: String = "",             // Console-like output
     val errorMessage: String? = null,         // Error message if any
-    val flashedFiles: List<FlashedFile> = emptyList() // History of flashed files
+    val flashedFiles: List<FlashedFile> = emptyList(), // History of flashed files,
+    val processingSteps: List<ProcessingStep> = emptyList()
+
 )
 
 // History item for flashed kernels
@@ -33,4 +38,10 @@ data class FlashedFile(
     val flashDate: String,    // Formatted date string
     val success: Boolean,
     val outputSummary: String // Short summary of flash output
+)
+
+data class ProcessingStep(
+    val title: String,
+    val description: String,
+    val timestamp: Long = System.currentTimeMillis()
 )
