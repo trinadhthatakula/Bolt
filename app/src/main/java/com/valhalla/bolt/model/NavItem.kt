@@ -11,4 +11,5 @@ data class NavItem(
 val navItems = listOf(
     NavItem("Flash", R.drawable.flash_on),
     NavItem("BackUp", R.drawable.archive),
+    NavItem("Restore", R.drawable.unarchive),
 )
