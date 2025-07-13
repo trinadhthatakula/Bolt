@@ -18,21 +18,15 @@ import com.valhalla.bolt.viewModel.FlasherViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: FlasherViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             BoltTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        viewModel = viewModel
-                    )
-                }
+                HomeScreen(
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
             }
         }
     }
