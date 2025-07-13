@@ -19,18 +19,20 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 - Simple and fast kernel flashing
 - Supports AnyKernel zips
 - Smallest APK size possible (around 1.0 MB)
+- Backup and Restore any Partition*
 
 ### Screenshots
 
 ### [▶️ Watch Demo](https://youtube.com/shorts/21q9h6YFR3Y?feature=share)
 <table>
   <tr>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Screenshot 1" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Screenshot 3" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpg" alt="Screenshot 3" width="200"/></td>
   </tr>
 </table>
 

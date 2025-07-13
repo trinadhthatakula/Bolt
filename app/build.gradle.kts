@@ -23,8 +23,8 @@ android {
         applicationId = "com.valhalla.bolt"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 1010
+        versionName = "1.01.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
