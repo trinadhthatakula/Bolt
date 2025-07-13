@@ -17,7 +17,7 @@ enum class FlashingState {
 }
 
 // Main UI state holder
-data class HomeUiState(
+data class FlashScreenUiState(
     val isZipValidating: Boolean = false, // Zip validating
     val isValidZip: Boolean = true,      // Whether the picked zip is valid
     val isRootAvailable: Boolean = false,    // Root access status
@@ -29,7 +29,6 @@ data class HomeUiState(
     val errorMessage: String? = null,         // Error message if any
     val flashedFiles: List<FlashedFile> = emptyList(), // History of flashed files,
     val processingSteps: List<ProcessingStep> = emptyList()
-
 )
 
 // History item for flashed kernels

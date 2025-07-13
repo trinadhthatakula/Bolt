@@ -8,7 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.valhalla.bolt.model.FlashedFile
 import com.valhalla.bolt.model.FlashingState
-import com.valhalla.bolt.model.HomeUiState
+import com.valhalla.bolt.model.FlashScreenUiState
 import com.valhalla.bolt.model.ProcessingStep
 import com.valhalla.bolt.model.Shell
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +28,8 @@ import java.util.zip.ZipFile
 class FlasherViewModel(application: Application) : AndroidViewModel(application) {
 
     // UI state exposed to composables
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(FlashScreenUiState())
+    val uiState: StateFlow<FlashScreenUiState> = _uiState.asStateFlow()
 
     // Shell instance for executing commands
     private lateinit var rootShell: Shell

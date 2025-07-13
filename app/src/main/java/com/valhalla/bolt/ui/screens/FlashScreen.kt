@@ -49,16 +49,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.valhalla.bolt.R
 import com.valhalla.bolt.model.FlashedFile
 import com.valhalla.bolt.model.FlashingState
-import com.valhalla.bolt.model.HomeUiState
+import com.valhalla.bolt.model.FlashScreenUiState
 import com.valhalla.bolt.ui.theme.firaFontFamily
 import com.valhalla.bolt.viewModel.FlasherViewModel
+import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FlashScreen(
     modifier: Modifier = Modifier,
-    viewModel: FlasherViewModel = viewModel()
+    viewModel: FlasherViewModel = koinViewModel ()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -267,7 +268,7 @@ fun FlashScreen(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun KernelFlasherContent(
-    uiState: HomeUiState,
+    uiState: FlashScreenUiState,
     onPickZip: () -> Unit,
     onFlash: () -> Unit,
     onReboot: () -> Unit, // New reboot callback
