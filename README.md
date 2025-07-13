@@ -28,11 +28,11 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
   <tr>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpg" alt="Screenshot 3" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot 5" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot 6" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Screenshot 7" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Screenshot 8" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpg" alt="Screenshot 9" width="200"/></td>
   </tr>
 </table>
 
