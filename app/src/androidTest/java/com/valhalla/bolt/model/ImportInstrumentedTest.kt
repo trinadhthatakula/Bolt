@@ -50,13 +50,14 @@ class ImportInstrumentedTest {
         compose.onNodeWithText("Import ZIP").performClick()
         compose.waitUntil(15000) { compose.onAllNodesWithText("Change ZIP").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Change ZIP").assertIsDisplayed()
-        compose.onNodeWithText("Review and flash").assertIsDisplayed()
+        compose.onNodeWithText("Review install").performScrollTo().assertIsDisplayed()
         assertEquals(previous, coordinator.status.value?.id)
-        compose.onNodeWithText("Review and flash").performClick()
+        compose.onNodeWithText("Review install").performClick()
         // This emulator has vbmeta only. Production must refuse an unsafe recovery bypass.
         compose.waitUntil(15000) { compose.onAllNodesWithText("No boot, init_boot or recovery target was discovered; flashing is blocked without kernel recovery").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("New job").performScrollTo().performClick()
-        compose.onNodeWithText("Select AnyKernel ZIP").assertIsDisplayed()
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText("Choose another ZIP"))
+        compose.onNodeWithText("Choose another ZIP").performClick()
+        compose.onNodeWithText("Select kernel ZIP").performScrollTo().assertIsDisplayed()
         assertEquals(previous, coordinator.status.value?.id)
     }
 
@@ -67,13 +68,16 @@ class ImportInstrumentedTest {
         val manifest = RecoveryManifest("ui-fixture", DeviceIdentity.current(context), 1L, listOf(RecoveryImage("recovery", file.length(), ArtifactFiles.sha256(file), null, "/dev/block/nonexistent-ui-fixture")))
         java.io.File(directory, "manifest.json").writeText(manifest.encode())
         try {
-            compose.onNodeWithText("Restore").performClick()
-            compose.onNodeWithText("Refresh").performClick()
-            compose.waitUntil(15000) { compose.onAllNodesWithText("Restore recovery").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText("Restore recovery").performScrollTo().performClick()
-            compose.onNodeWithText("Confirm verified restore").assertIsDisplayed()
-            compose.onAllNodesWithText("Restore").filterToOne(hasClickAction() and hasAnyAncestor(isDialog())).performClick()
-            compose.waitUntil(15000) { compose.onAllNodesWithText("Confirm verified restore").fetchSemanticsNodes().isEmpty() }
+            compose.onNodeWithContentDescription("Recovery", useUnmergedTree = true).performClick()
+            compose.onNode(hasScrollAction()).performScrollToNode(hasText("Refresh bundles"))
+            compose.onNodeWithText("Refresh bundles").performClick()
+            compose.onNode(hasScrollAction()).performScrollToNode(hasText("AutoRecovery · 1 partition"))
+            compose.onNodeWithText("AutoRecovery · 1 partition").performClick()
+            compose.onNode(hasScrollAction()).performScrollToNode(hasText("Review restore of recovery"))
+            compose.onNodeWithText("Review restore of recovery").performClick()
+            compose.onNodeWithText("Review restore").assertIsDisplayed()
+            compose.onAllNodesWithText("Restore recovery").filterToOne(hasClickAction() and hasAnyAncestor(isDialog())).performClick()
+            compose.waitUntil(15000) { compose.onAllNodesWithText("Review restore").fetchSemanticsNodes().isEmpty() }
             val coordinator = GlobalContext.get().get<OperationCoordinator>()
             compose.waitUntil(15000) { coordinator.status.value?.running == false }
             assertFalse(coordinator.status.value!!.uncertain)

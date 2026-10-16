@@ -14,33 +14,40 @@ scripts/test-emulator.sh emulator-5584
 serials, installs only on the named emulator, and checks the instrumentation success
 message because `adb am instrument` can exit zero for failed assertions.
 
-Host coverage (22 tests including the existing example): real process nonzero exits,
+Host coverage (26 tests including the existing example): real process nonzero exits,
 single-process environment, shell quoting, stderr flooding, timeout and inherited
 pipe handling; bounded copies/hashes; AnyKernel structure, traversal, duplicate and
 symlink rejection; original installer preservation; independent original slot images;
 all-source integrity validation; wrong device/unknown slot/missing partner/remapped
 target rejection; first/second write failures and backup/manifest-commit failure before
-installer launch. Partition mutations use a fake backend.
+installer launch; same/changed boot identity, missing or wrong-device evidence,
+interrupted installation and independent health feedback. Partition mutations use a fake backend.
 
-Instrumentation coverage (16 tests including the existing example): pinned runtime
+Instrumentation coverage (21 tests including the existing example): pinned runtime
 hash/applets/execution, actual root UID, successful and failing harmless installer
 fixtures with original arguments/environment/bytes, standalone applets without the
 system PATH, native lock contention, read-only emulator partition backup, strict
 manifest JSON, single-flight application ownership and activity recreation, durable
 partial/Unknown outcomes and result/log restoration, malformed/write-failing journal
 handling, hostile provider names/null/oversized streams, external import/recreation/
-review/New job, exported alias dispatch and consumed restore confirmation on preflight
-rejection. The provider exists only in the test APK and uses no production bypass.
+review/new selection, exported alias dispatch and consumed restore confirmation on preflight
+rejection; all 18 Outfit weight/style declarations and visibly heavier bold outlines;
+theme/font/AMOLED/dynamic-color persistence after recreation; one six-partition recovery
+bundle and its detail flow; simulated restart observation, saved feedback and reopening
+install details. Actual dark/light/AMOLED screen captures are generated in app-private
+`files/ui-validation`. The provider exists only in the test APK and uses no production bypass.
 
 The root fixtures only print, list their ZIP or sleep. The partition probe reads a
 small vbmeta target into private cache. **No real block-device writes or reboot commands
 are executed by these tests.** Journal mutation status is simulated without partition
-writes. Restore UI rejection uses a deliberately nonexistent target.
+writes. Restore UI rejection uses a deliberately nonexistent target. The restart UI
+test uses invented boot IDs and a completed coordinator fixture: it does not launch an
+installer, restart the emulator or establish real post-flash kernel health.
 
 ## Results recorded on 2026-10-16
 
 - JDK 21: host tests, debug and instrumentation builds, lintDebug and minified unsigned
-  release build passed. Lint: 0 errors, 41 warnings (dependency/toolchain currency,
+  release build passed. Lint: 0 errors, 49 warnings (dependency/toolchain currency,
   unused resources, conservative usable-space checks, device identity and icons).
 - All four bundled ABI assets match the pinned official archive digests; the download
   and offline verification script both passed.
@@ -57,6 +64,13 @@ writes. Restore UI rejection uses a deliberately nonexistent target.
 - The installed Espresso 3.6.1 test dependency failed against API 37's input APIs. Stable
   Espresso 3.7.0 and AndroidX JUnit 1.3.0 are now used for instrumentation; application
   runtime dependencies and the Android toolchain were not upgraded.
+- Cockpit/Asgard implementation: all 26 host tests and 21 emulator tests passed. Native
+  Outfit weights 100–900, upright/italic aliases, emphasized typography and painted
+  bold/regular differences were verified on API 37. Dark, light and AMOLED screenshots
+  were inspected. This is emulator evidence; no new Xiaomi font-weight check occurred.
+- The user reported a successful physical-device BakaSU install and reboot using the
+  preceding reliability implementation. This confirms that reported install, without
+  substituting for broader hardware restore, font rendering or failure-mode acceptance.
 
 ## Pending before declaring device support or shipping a release
 

@@ -26,8 +26,19 @@ data class RestoreUiState(
 
 data class BackupSession(
     val sessionName: String, // e.g., "Backup_2025-07-13_20-05-30"
-    val files: List<BackupFile>
-)
+    val files: List<BackupFile>,
+    val id: String = sessionName,
+    val isAutomatic: Boolean = false,
+    val createdAt: Long = 0,
+    val source: String = "Selected backup directory",
+    val beforeFile: String? = null,
+) {
+    val displayTitle: String get() = "${if (isAutomatic) "AutoRecovery" else "My backup"} · ${files.size} ${if (files.size == 1) "partition" else "partitions"}"
+    val subtitle: String get() = listOfNotNull(
+        createdAt.takeIf { it > 0 }?.let { java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT).format(java.util.Date(it)) },
+        beforeFile?.let { "Before $it" }, source,
+    ).joinToString(" · ")
+}
 
 enum class RestoreMode {
     ACTIVE_SLOT_ONLY,

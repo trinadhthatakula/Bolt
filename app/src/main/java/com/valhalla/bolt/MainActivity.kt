@@ -12,8 +12,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.valhalla.bolt.ui.screens.HomeScreen
 import com.valhalla.bolt.ui.theme.BoltTheme
+import com.valhalla.bolt.ui.theme.ThemeMode
+import com.valhalla.bolt.ui.theme.ThemePreferencesStore
+import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
     private var incomingUri by mutableStateOf<Uri?>(null)
@@ -25,7 +30,15 @@ class MainActivity : ComponentActivity() {
             incomingUri = savedInstanceState.getString("incomingUri")?.let(Uri::parse)
             incomingError = savedInstanceState.getString("incomingError")
         }
-        setContent { BoltTheme {
+        setContent {
+            val themeStore: ThemePreferencesStore = koinInject()
+            val appearance by themeStore.state.collectAsStateWithLifecycle()
+            val dark = when (appearance.mode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+            BoltTheme(darkTheme = dark, dynamicColor = appearance.dynamicColors, amoledMode = appearance.amoled, fontPreset = appearance.fontPreset) {
             HomeScreen(incomingUri = incomingUri, onImportConsumed = { incomingUri = null })
             incomingError?.let { message -> AlertDialog(
                 onDismissRequest = { incomingError = null }, title = { Text("ZIP import unavailable") },

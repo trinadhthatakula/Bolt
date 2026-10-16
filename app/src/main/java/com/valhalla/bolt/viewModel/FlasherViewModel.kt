@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -26,7 +27,8 @@ class FlasherViewModel(
     application: Application,
     private val documents: DocumentHandler,
     private val operations: OperationCoordinator,
-    private val runtime: RootRuntime
+    private val runtime: RootRuntime,
+    private val journeys: FlashJourneyStore,
 ) : AndroidViewModel(application) {
     private val mutable = MutableStateFlow(FlashScreenUiState())
     val uiState = mutable.asStateFlow()
@@ -37,23 +39,39 @@ class FlasherViewModel(
     private val history = AtomicFile(File(application.filesDir, "flash-history.json"))
     private val rebootConfirmation = MutableStateFlow(false)
     val showRebootConfirmation = rebootConfirmation.asStateFlow()
+    @Volatile private var dismissedOperationId: String? = null
     init {
         checkRootAvailability()
         viewModelScope.launch(Dispatchers.IO) {
             mutable.update { it.copy(flashedFiles = readHistory()) }
         }
-        viewModelScope.launch { operations.status.collect { status ->
-            if (status?.kind == "Flash") mutable.update { it.copy(
-                flashingState = if (status.running) FlashingState.FLASHING else if (status.phase == "Completed") FlashingState.SUCCESS_REBOOT_NEEDED else FlashingState.ERROR,
-                flashOutput = status.tail, logPath = status.logPath,
-                errorMessage = if (!status.running && status.phase != "Completed") status.message else null
-            ) }
+        viewModelScope.launch { combine(operations.status, journeys.state) { status, records -> status to records }.collect { (status, records) ->
+            if (status?.kind == "Flash" && status.id != dismissedOperationId) publishOperation(status, records)
         } }
+        refreshBootStatus()
+    }
+    private fun publishOperation(status: OperationStatus, records: List<FlashJourney>) {
+        val journey = records.firstOrNull { it.id == status.id }
+        mutable.update { it.copy(
+            journey = journey,
+            flashingState = if (status.running) FlashingState.FLASHING else if (status.phase == "Completed") {
+                if (journey?.bootStatus in setOf(BootStatus.REBOOT_OBSERVED, BootStatus.USER_CONFIRMED, BootStatus.ISSUE_REPORTED)) FlashingState.SUCCESS else FlashingState.SUCCESS_REBOOT_NEEDED
+            } else FlashingState.ERROR,
+            flashOutput = status.tail, logPath = status.logPath,
+            errorMessage = if (!status.running && status.phase != "Completed") status.message else null
+        ) }
+    }
+    fun showCurrentInstall() {
+        val status = operations.status.value?.takeIf { it.kind == "Flash" } ?: return
+        dismissedOperationId = null
+        publishOperation(status, journeys.state.value)
     }
     fun checkRootAvailability() {
         viewModelScope.launch(Dispatchers.IO) {
             val available = Shell.isRootAvailable()
-            mutable.update { it.copy(isRootAvailable = available, isRootCheckComplete = true) }
+            val kernel = if (available) shell.execute("uname -r").takeIf { it.isSuccess }?.output?.trim() else null
+            val slot = if (available && !operations.isBlocked) runCatching { partitions.getActiveSlotSuffix() }.getOrNull() else null
+            mutable.update { it.copy(isRootAvailable = available, isRootCheckComplete = true, kernelRelease = kernel, activeSlot = slot) }
         }
     }
     fun pickZipFile(uri: Uri) {
@@ -67,7 +85,8 @@ class FlasherViewModel(
                 val digest = ArtifactFiles.sha256(staged)
                 val previous = mutable.value.copiedZipPath
                 mutable.update { it.copy(pickedZipUri = uri, copiedZipPath = staged.absolutePath, fileName = documents.displayName(uri), sha256 = digest,
-                    flashingState = FlashingState.IDLE, isZipValidating = false, isValidZip = true, errorMessage = null) }
+                    flashingState = FlashingState.IDLE, isZipValidating = false, isValidZip = true, errorMessage = null, journey = null) }
+                dismissedOperationId = operations.status.value?.id
                 if (previous != null && previous != staged.absolutePath) File(previous).parentFile?.deleteRecursively()
             } catch (e: Exception) { staged?.parentFile?.deleteRecursively(); fail(e.message ?: "ZIP import failed") }
             finally { picking.set(false); mutable.update { it.copy(isZipValidating = false) } }
@@ -93,7 +112,7 @@ class FlasherViewModel(
                 val targets = partitions.recoveryTargets()
                 require(documents.context.filesDir.usableSpace > targets.sumOf { it.sizeBytes } + expanded + zip.length() + 64L * 1024 * 1024) { "Insufficient space for recovery and ZIP extraction" }
                 mutable.update { it.copy(flashingState = FlashingState.IDLE, reviewText =
-                    "${it.fileName}\nSHA-256: ${it.sha256}\n\nAutomatic recovery: ${targets.joinToString { target -> target.name }}\n\nThe package controls target selection and may change additional partitions. This snapshot is not a universal rollback guarantee. Installer completion does not prove bootability. Continue only with a compatible package you trust.") }
+                    "Use a kernel package compatible with your device. Its installer chooses which partitions to change; the automatic snapshot covers the original images listed here and cannot guarantee every package can be rolled back.", recoveryTargets = targets.map { target -> target.name }) }
             } catch (e: Exception) { fail(e.message ?: "Preflight failed") }
             finally { preparing.set(false) }
         }
@@ -106,6 +125,7 @@ class FlasherViewModel(
         dismissReview()
         val started = operations.launch("Flash") { session ->
             runtime.verify(shell); runtime.ensureIdle(shell); batteryCheck()
+            journeys.begin(session.value.id, selection.fileName, DeviceIdentity.current(documents.context).id, currentBootId())
             require(ArtifactFiles.sha256(source) == selection.sha256) { "Staged ZIP changed; re-import it" }
             val workspace = ArtifactFiles.workspace(File(documents.context.cacheDir, "flash"))
             val zip = File(workspace, "kernel.zip")
@@ -129,10 +149,11 @@ class FlasherViewModel(
                     }, onOutput = session::log, beforeInstall = session::mutating, onTarget = session::target
                 )
                 session.exitCode(result.exitCode)
-                val summary = if (result.isSuccess) "Installer completed (exit 0). Bootability remains unverified." else "Installer failed (${result.exitCode ?: "not started"}); partition changes may be partial."
-                saveHistory(selection.fileName, result.isSuccess, summary)
+                val summary = if (result.isSuccess) "Installer completed · exit 0" else "Installer failed (${result.exitCode ?: "not started"}); partition changes may be partial."
+                saveHistory(selection.fileName, result.isSuccess, summary, session.value.id, session.value.logPath)
                 result.requireSuccess("AnyKernel installer")
                 session.finish(true, summary)
+                if (operations.status.value?.phase == "Completed") journeys.complete(session.value.id)
             } finally {
                 // Root-created AKHOME files may not be removable by the app UID.
                 val cleaned = shell.execute("rm -rf -- ${shellQuote(workspace.absolutePath)}")
@@ -146,7 +167,8 @@ class FlasherViewModel(
     fun resetState() {
         if (operations.isBlocked || picking.get() || preparing.get()) return
         mutable.value.copiedZipPath?.let { File(it).parentFile?.deleteRecursively() }
-        mutable.update { it.copy(flashingState = FlashingState.IDLE, pickedZipUri = null, copiedZipPath = null, fileName = "", sha256 = "", reviewText = null, isValidZip = true, errorMessage = null) }
+        dismissedOperationId = operations.status.value?.id
+        mutable.update { it.copy(flashingState = FlashingState.IDLE, pickedZipUri = null, copiedZipPath = null, fileName = "", sha256 = "", reviewText = null, isValidZip = true, errorMessage = null, journey = null, logPath = null) }
     }
     private fun fail(message: String) { mutable.update { it.copy(flashingState = FlashingState.ERROR, errorMessage = message, reviewText = null) } }
     fun confirmReboot() { if (!operations.isBlocked && mutable.value.flashingState == FlashingState.SUCCESS_REBOOT_NEEDED) rebootConfirmation.value = true }
@@ -155,21 +177,36 @@ class FlasherViewModel(
         if (operations.isBlocked) return
         viewModelScope.launch(Dispatchers.IO) {
             val result = shell.execute("reboot", 15)
-            if (!result.isSuccess) fail("Reboot command failed. Reboot manually. ${result.output}")
+            if (!result.isSuccess) mutable.update { it.copy(errorMessage = "Reboot command failed. Reboot manually. ${result.output}") }
         }
+    }
+    private suspend fun currentBootId(): String? = shell.execute("cat /proc/sys/kernel/random/boot_id").takeIf { it.isSuccess }?.output?.trim()?.takeIf { it.matches(Regex("[0-9a-fA-F-]{36}")) }
+    fun refreshBootStatus() {
+        if (operations.isBlocked) return
+        viewModelScope.launch(Dispatchers.IO) { runCatching {
+            val device = DeviceIdentity.current(documents.context).id
+            val status = operations.status.value
+            if (status?.kind == "Flash" && status.phase == "Completed" && journeys.state.value.none { it.id == status.id })
+                journeys.addLegacy(status.id, readHistory().firstOrNull()?.fileName ?: "Previous kernel", device)
+            journeys.observeLatest(device, currentBootId())
+        } }
+    }
+    fun confirmKernelWorking(working: Boolean) {
+        val id = mutable.value.journey?.id ?: return
+        viewModelScope.launch(Dispatchers.IO) { journeys.feedback(id, working) }
     }
     private fun readHistory(): List<FlashedFile> = runCatching {
         val array = JSONArray(history.openRead().bufferedReader().use { it.readText() })
-        (0 until array.length()).map { index -> array.getJSONObject(index).let { FlashedFile(it.getString("file"), it.getString("date"), it.getBoolean("success"), it.getString("summary")) } }
+            (0 until array.length()).map { index -> array.getJSONObject(index).let { FlashedFile(it.getString("file"), it.getString("date"), it.getBoolean("success"), it.getString("summary"), it.optString("id").takeIf { id -> id.isNotEmpty() }, it.optString("log").takeIf { path -> path.isNotEmpty() }) } }
     }.getOrElse {
         File(documents.context.filesDir, "flash_history.txt").takeIf { it.exists() }?.readLines()?.mapNotNull { line ->
             line.split('|').takeIf { it.size == 4 }?.let { FlashedFile(it[0], it[1], false, "Legacy result (unverified): ${it[3]}") }
         } ?: emptyList()
     }
-    private fun saveHistory(name: String, success: Boolean, summary: String) {
-        val item = FlashedFile(name, SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(Date()), success, summary)
+    private fun saveHistory(name: String, success: Boolean, summary: String, id: String, log: String) {
+        val item = FlashedFile(name, SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(Date()), success, summary, id, log)
         val records = (listOf(item) + readHistory()).take(50)
-        val array = JSONArray().apply { records.forEach { put(JSONObject().put("file", it.fileName).put("date", it.flashDate).put("success", it.success).put("summary", it.outputSummary)) } }
+        val array = JSONArray().apply { records.forEach { put(JSONObject().put("file", it.fileName).put("date", it.flashDate).put("success", it.success).put("summary", it.outputSummary).put("id", it.jobId ?: "").put("log", it.logPath ?: "")) } }
         val output = history.startWrite()
         try { output.write(array.toString().toByteArray()); history.finishWrite(output) }
         catch (e: Exception) { history.failWrite(output); throw e }

@@ -52,7 +52,7 @@ class RestoreViewModel(
                 val local = documentHandler.localRecoverySessions()
                 val uri = getBackUpDirectory()?.toUri()
                 val external = if (uri != null && documentHandler.canAccessUri(uri)) documentHandler.listBackupSessions(uri) else emptyList()
-                mutable.update { it.copy(backupSessions = local + external) }
+                mutable.update { it.copy(backupSessions = (local + external).sortedByDescending { session -> session.createdAt }) }
             } catch (e: Exception) { mutable.update { it.copy(errorMessage = "Cannot list backups: ${e.message}") } }
         }
     }

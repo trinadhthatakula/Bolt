@@ -32,7 +32,11 @@ data class FlashScreenUiState(
     val flashOutput: String = "",             // Console-like output
     val errorMessage: String? = null,         // Error message if any
     val flashedFiles: List<FlashedFile> = emptyList(), // History of flashed files,
-    val processingSteps: List<ProcessingStep> = emptyList()
+    val processingSteps: List<ProcessingStep> = emptyList(),
+    val recoveryTargets: List<String> = emptyList(),
+    val activeSlot: String? = null,
+    val kernelRelease: String? = null,
+    val journey: FlashJourney? = null,
 )
 
 // History item for flashed kernels
@@ -40,7 +44,9 @@ data class FlashedFile(
     val fileName: String,
     val flashDate: String,    // Formatted date string
     val success: Boolean,
-    val outputSummary: String // Short summary of flash output
+    val outputSummary: String,
+    val jobId: String? = null,
+    val logPath: String? = null,
 )
 
 data class ProcessingStep(

@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
+import com.valhalla.bolt.ui.theme.LocalTechnicalFontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,7 +38,7 @@ fun OperationLogSheet(path: String?, tail: String, onDismiss: () -> Unit) {
             TextButton(onClick = { export.launch("Bolt-operation.log") }, enabled = path != null && File(path).isFile) { Text("Export full log") }
             message?.let { Text(it) }
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
-                item { Text(tail.ifEmpty { "No output yet. Full retained output can be exported above." }, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall) }
+                item { Text(tail.ifEmpty { "No output yet. Full retained output can be exported above." }, fontFamily = LocalTechnicalFontFamily.current, style = MaterialTheme.typography.bodySmall) }
             }
             Spacer(Modifier.height(20.dp))
         }

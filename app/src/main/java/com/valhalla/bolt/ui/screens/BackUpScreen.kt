@@ -1,333 +1,96 @@
 package com.valhalla.bolt.ui.screens
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.valhalla.bolt.R
-import com.valhalla.bolt.model.BackupRestoreState
-import com.valhalla.bolt.model.BackupUiState
-import com.valhalla.bolt.model.Partition
-import com.valhalla.bolt.ui.theme.firaFontFamily
+import com.valhalla.bolt.model.*
+import com.valhalla.bolt.ui.theme.LocalTechnicalFontFamily
 import com.valhalla.bolt.viewModel.BackUpViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import com.valhalla.bolt.model.OperationCoordinator
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackUpScreen(
-    modifier: Modifier = Modifier,
-    viewModel: BackUpViewModel = koinViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+fun BackUpScreen(modifier: Modifier = Modifier, viewModel: BackUpViewModel = koinViewModel()) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val operations: OperationCoordinator = koinInject()
     val operation by operations.status.collectAsStateWithLifecycle()
     val busy = operation?.running == true || operation?.uncertain == true
-    var showLoggerDialog by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // 1. Header - Similar to FlashScreen
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painterResource(R.drawable.archive), // A suggested icon for backup
-                "Backup Icon",
-                modifier = Modifier.size(36.dp)
-            )
-            Text(
-                text = "Backup",
-                style = MaterialTheme.typography.titleLargeEmphasized,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
-            )
-            if (uiState.processingSteps.isNotEmpty()) {
-                IconButton(onClick = { showLoggerDialog = true }) {
-                    Icon(painterResource(R.drawable.terminal), "Open Logger")
-                }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        when {
-            uiState.backupRestoreState == BackupRestoreState.CHECKING_ROOT -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(Modifier.height(16.dp))
-                    Text("Checking root access...")
-                }
-            }
-
-            !uiState.isRootAvailable && uiState.errorMessage != null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Root Access Required",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Button(enabled = !busy, onClick = viewModel::checkRootAvailability) { Text("Check root again") }
-                    Text(
-                        text = uiState.errorMessage ?: "This feature requires root.",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            }
-
-            else -> {
-                BackupRestoreContent(
-                    uiState = uiState,
-                    busy = busy,
-                    onStartBackup = { partitions ->
-                        showLoggerDialog = true
-                        viewModel.startBackup(partitions)
-                    },
-                    onSaveNewLocationAndBackup = { partitions, uri ->
-                        showLoggerDialog = true
-                        viewModel.saveBackupDirectoryAndStartBackup(partitions, uri)
-                    }
-                )
-            }
-        }
-    }
-
-    if (showLoggerDialog) {
-        ModalBottomSheet(onDismissRequest = { showLoggerDialog = false }) {
-            // ... (Logger UI - This can be extracted into a common composable)
-            LazyColumn(modifier = Modifier.padding(16.dp)) {
-                items(uiState.processingSteps) { step ->
-                    Text(
-                        text = "${step.title}: ${step.description}",
-                        fontFamily = firaFontFamily,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BackupRestoreContent(
-    uiState: BackupUiState,
-    busy: Boolean = false,
-    onStartBackup: (List<Partition>) -> Unit,
-    onSaveNewLocationAndBackup: (List<Partition>, Uri) -> Unit
-) {
-    var selectedPartitions by remember { mutableStateOf<List<Partition>>(emptyList()) }
-    var locationError by remember { mutableStateOf<String?>(null) }
-
     val context = LocalContext.current
-    val contentResolver = context.contentResolver
-
-    val backupLocationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree(),
-        onResult = { uri ->
-            if (uri != null) {
-                val flags =
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                try {
-                    contentResolver.takePersistableUriPermission(uri, flags)
-                    locationError = null
-                    if (selectedPartitions.isNotEmpty()) onSaveNewLocationAndBackup(selectedPartitions.toList(), uri)
-                } catch (e: SecurityException) { locationError = "Cannot retain access to this directory. Choose another location." }
-            }
-        }
-    )
-
-    var otherPartitionsExpanded by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        (locationError ?: uiState.errorMessage)?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        if (uiState.backupRestoreState == BackupRestoreState.SUCCESS) Text("Backup completed and verified")
-        uiState.activeSlotSuffix?.let { slot ->
-            Text(
-                text = "A/B Partition Scheme Detected (Active slot: $slot)",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-        }
-
-        if (uiState.backupRestoreState == BackupRestoreState.LISTING_PARTITIONS) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+    var names by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var advanced by rememberSaveable { mutableStateOf(false) }
+    var review by rememberSaveable { mutableStateOf(false) }
+    var showingResult by rememberSaveable { mutableStateOf(false) }
+    var logs by remember { mutableStateOf(false) }
+    var providerError by remember { mutableStateOf<String?>(null) }
+    val selected = (state.recommendedPartitions + state.otherPartitions).filter { it.name in names }
+    val destination = state.savedBackupDirectoryUri
+    val folder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            viewModel.saveBackupDirectory(uri)
+        }.onFailure { providerError = "Cannot access backup directory: ${it.message}" }
+    }
+    if (review) AlertDialog(onDismissRequest = { review = false }, title = { Text("Review backup") },
+        text = { LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item { Text("${selected.size} original partition images · ${readableSize(selected.sumOf { it.sizeBytes })}", style = MaterialTheme.typography.titleMedium) }
+            item { PartitionBadges(selected.map { it.name }) }
+            item { Text("Images are exported to your selected directory and their digests are checked. A complete manifest is saved last.") }
+        } },
+        confirmButton = { TextButton(enabled = !busy && selected.isNotEmpty() && destination != null && state.isRootAvailable, onClick = { review = false; showingResult = true; viewModel.startBackup(selected) }) { Text("Save backup") } },
+        dismissButton = { TextButton(onClick = { review = false }) { Text("Back") } })
+    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (operation?.kind == "Backup" && operation?.running == true) item {
+            Text("Saving your originals.", style = MaterialTheme.typography.headlineLarge)
+            Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(operation!!.message, style = MaterialTheme.typography.titleMedium)
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                operation!!.outcomes.forEach { Text("${it.partition} · ${it.state}", style = MaterialTheme.typography.bodySmall, fontFamily = LocalTechnicalFontFamily.current) }
+                TextButton(onClick = { logs = true }) { Text("View live log") }
+            } }
+        } else if (showingResult && operation?.kind == "Backup") {
+            item { OperationResultCard(operation!!) { logs = true } }
+            item { TextButton(onClick = { showingResult = false; names = emptyList() }) { Text("Create another backup") } }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.recommendedPartitions) { partition ->
-                    PartitionItem(
-                        partition = partition,
-                        isSelected = partition in selectedPartitions,
-                        onSelectionChanged = {
-                            selectedPartitions = if (it) {
-                                selectedPartitions + partition
-                            } else {
-                                selectedPartitions - partition
-                            }
-                        }
-                    )
-                }
-                if (uiState.otherPartitions.isNotEmpty()) {
-                    item {
-                        ExpandableHeader(
-                            title = "Other Partitions (${uiState.otherPartitions.size})",
-                            isExpanded = otherPartitionsExpanded,
-                            onClick = { otherPartitionsExpanded = !otherPartitionsExpanded }
-                        )
-                    }
-                }
-
-                // 3. Show other partitions only if expanded
-                if (otherPartitionsExpanded) {
-                    items(uiState.otherPartitions) { partition ->
-                        PartitionItem(
-                            partition = partition,
-                            isSelected = partition in selectedPartitions,
-                            onSelectionChanged = {
-                                selectedPartitions = if (it) {
-                                    selectedPartitions + partition
-                                } else {
-                                    selectedPartitions - partition
-                                }
-                            }
-                        )
-                    }
-                }
+            item { Text("Keep your originals.", style = MaterialTheme.typography.headlineLarge) }
+            item {
+                Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(Icons.Outlined.FolderOpen, null)
+                    Text("Backup destination", style = MaterialTheme.typography.titleMedium)
+                    Text(if (destination == null) "Choose where to save the bundle" else "Selected backup directory", style = MaterialTheme.typography.bodyMedium)
+                    OutlinedButton(enabled = !busy, onClick = { folder.launch(null) }) { Text(if (destination == null) "Choose directory" else "Change directory") }
+                } }
             }
+            if (!state.isRootCheckComplete || state.backupRestoreState in setOf(BackupRestoreState.CHECKING_ROOT, BackupRestoreState.LISTING_PARTITIONS)) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Discovering available images…") }
+            if (state.isRootCheckComplete && !state.isRootAvailable) item { Text("Root is required to read partition images."); TextButton(enabled = !busy, onClick = viewModel::checkRootAvailability) { Text("Check root again") } }
+            if (state.recommendedPartitions.isNotEmpty()) item { Text("Recommended images", style = MaterialTheme.typography.titleMedium) }
+            items(state.recommendedPartitions, key = { it.name }) { partition -> BackupPartitionCard(partition, partition.name in names, !busy) { checked -> names = if (checked) names + partition.name else names - partition.name } }
+            if (state.otherPartitions.isNotEmpty()) item { TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "Hide other partitions" else "Other partitions · ${state.otherPartitions.size}") } }
+            if (advanced) items(state.otherPartitions, key = { it.name }) { partition -> BackupPartitionCard(partition, partition.name in names, !busy) { checked -> names = if (checked) names + partition.name else names - partition.name } }
+            item { Button(enabled = !busy && state.isRootAvailable && selected.isNotEmpty() && destination != null, onClick = { review = true }, modifier = Modifier.fillMaxWidth()) { Text("Review ${selected.size} images") } }
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (uiState.savedBackupDirectoryUri != null) {
-                    // If location is known, start backup directly
-                    onStartBackup(selectedPartitions)
-                } else {
-                    // If location is unknown, launch the directory picker
-                    backupLocationLauncher.launch(null)
-                }
-            },
-            enabled = !busy && uiState.isRootAvailable && selectedPartitions.isNotEmpty() && uiState.backupRestoreState in setOf(BackupRestoreState.IDLE, BackupRestoreState.SUCCESS, BackupRestoreState.ERROR),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Backup Selected (${selectedPartitions.size}) Partitions")
-        }
+        (providerError ?: state.errorMessage)?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
     }
+    if (logs) OperationLogSheet(operation?.logPath, operation?.tail.orEmpty()) { logs = false }
 }
 
 @Composable
-fun ExpandableHeader(
-    title: String,
-    isExpanded: Boolean,
-    onClick: () -> Unit
-) {
-    val rotationAngle by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            painter = painterResource(R.drawable.arrow_drop_down),
-            contentDescription = if (isExpanded) "Collapse" else "Expand",
-            modifier = Modifier.graphicsLayer(rotationZ = rotationAngle)
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PartitionItem(
-    partition: Partition,
-    isSelected: Boolean,
-    onSelectionChanged: (Boolean) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        onClick = { onSelectionChanged(!isSelected) }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = partition.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                fontFamily = firaFontFamily
-            )
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = null // Click handled by the Card
-            )
+private fun BackupPartitionCard(partition: Partition, selected: Boolean, enabled: Boolean, onSelect: (Boolean) -> Unit) {
+    OutlinedCard(onClick = { if (enabled) onSelect(!selected) }, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(checked = selected, onCheckedChange = onSelect, enabled = enabled)
+            Column { Text(partition.name, style = MaterialTheme.typography.titleMedium, fontFamily = LocalTechnicalFontFamily.current); Text(readableSize(partition.sizeBytes), style = MaterialTheme.typography.bodySmall) }
         }
     }
 }

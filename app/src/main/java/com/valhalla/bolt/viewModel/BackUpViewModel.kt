@@ -78,12 +78,14 @@ class BackUpViewModel(
                 require(directory.usableSpace > targets.sumOf { it.sizeBytes } + 64L * 1024 * 1024) { "Insufficient space to stage the backup" }
                 val targetDirectory = documentHandler.createBackupSessionDir(destination, "Backup_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}").getOrThrow()
                 val images = targets.map { target ->
+                    session.target(TargetOutcome(target.name, "Exporting"))
                     session.phase("Backing up", target.name); step("Backing up", target.name)
                     val file = File(directory, "${target.name}.img").apply { check(createNewFile()) }
                     partitions.backup(target, file, session::log)
                     val image = RecoveryImage(target.name, file.length(), ArtifactFiles.sha256(file), PartitionPolicy.suffix(target.name), target.path)
                     val document = targetDirectory.createFile("application/octet-stream", "${target.name}.img") ?: error("Cannot create backup image")
                     documentHandler.writeVerified(document, file)
+                    session.target(TargetOutcome(target.name, "Verified"))
                     step("Verified", "${target.name}: copied/exported digest verified")
                     image
                 }

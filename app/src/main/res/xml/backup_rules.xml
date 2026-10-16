@@ -5,4 +5,11 @@
         <exclude domain="file" path="operation.json" />
         <exclude domain="file" path="operation.json.bak" />
         <exclude domain="file" path="operation.json.new" />
+        <exclude domain="file" path="flash-journeys.json" />
+        <exclude domain="file" path="flash-journeys.json.bak" />
+        <exclude domain="file" path="flash-journeys.json.new" />
+        <exclude domain="file" path="flash-history.json" />
+        <exclude domain="file" path="flash-history.json.bak" />
+        <exclude domain="file" path="flash-history.json.new" />
+        <exclude domain="file" path="flash_history.txt" />
 </full-backup-content>

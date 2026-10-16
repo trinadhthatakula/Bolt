@@ -21,6 +21,8 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 - Pinned BusyBox runtime for ARM64, ARM32, x86 and x86-64 (current universal release APK: approximately 5 MiB)
 - Verified manifest-based backups and restores for discovered supported partitions
 - Application-wide operation ownership, explicit partial outcomes and interrupted-job recovery
+- Cockpit overview, compact recovery bundles and a separate restart/health feedback record
+- Thor's Asgardian light/dark palette, Outfit/Fira Code typography and persistent appearance settings
 
 ### Flashing, backup and recovery
 
@@ -32,6 +34,9 @@ installer may make. Legacy backups without a complete manifest cannot be restore
 See [operation and recovery behavior](docs/kernel-flashing.md),
 [runtime provenance and release requirements](docs/runtime.md), and
 [tests and pending device validation](docs/testing.md).
+
+Appearance settings offer System, Light and Dark modes, AMOLED backgrounds, Android
+12+ dynamic colors, and Asgard or system fonts. See [appearance and font provenance](docs/appearance.md).
 
 ### Screenshots
 

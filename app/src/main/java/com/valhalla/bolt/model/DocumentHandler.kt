@@ -29,25 +29,30 @@ class DocumentHandler(val context: Context) {
         ArtifactFiles.copyBounded(input, bytes, 1024 * 1024)
         RecoveryManifest.decode(bytes.toString(Charsets.UTF_8.name()))
     }
-    private fun session(name: String, manifestUri: Uri?, images: Map<String, Uri>): BackupSession {
+    private fun session(name: String, manifestUri: Uri?, images: Map<String, Uri>, automatic: Boolean = false, fallbackDate: Long = 0): BackupSession {
         val manifest = runCatching { readManifest(requireNotNull(manifestUri)) }.getOrNull()
         val error = if (manifest == null) "Unverified legacy or incomplete backup. A complete Bolt manifest is required for restore." else null
         val files = images.map { (partition, uri) ->
             BackupFile(uri, "$partition.img", partition, manifest, images, error ?: if (manifest!!.images.none { it.partition == partition }) "Image is missing from the manifest" else null)
         }
-        return BackupSession(name, files)
+        val before = if (automatic && manifest != null) runCatching {
+            val history = org.json.JSONArray(File(context.filesDir, "flash-history.json").readText())
+            (0 until history.length()).map { history.getJSONObject(it) }.firstOrNull { it.optString("id") == manifest.id }?.getString("file")
+        }.getOrNull() else null
+        return BackupSession(name, files.sortedBy { it.partitionName }, manifest?.id ?: manifestUri?.toString() ?: name, automatic,
+            manifest?.createdAt ?: fallbackDate, if (automatic) "On this device" else "Selected backup directory", before)
     }
     fun localRecoverySessions(): List<BackupSession> = File(context.filesDir, "recovery").listFiles().orEmpty().filter { it.isDirectory }.mapNotNull { directory ->
         val images = directory.listFiles().orEmpty().filter { it.isFile && it.name.endsWith(".img") }.associate { it.name.removeSuffix(".img") to Uri.fromFile(it) }
-        if (images.isEmpty()) null else session("Automatic recovery ${directory.name.take(8)}", File(directory, "manifest.json").takeIf { it.exists() }?.let(Uri::fromFile), images)
+        if (images.isEmpty()) null else session("Automatic recovery ${directory.name.take(8)}", File(directory, "manifest.json").takeIf { it.exists() }?.let(Uri::fromFile), images, automatic = true, fallbackDate = directory.lastModified())
     }
     fun listBackupSessions(backupUri: Uri): List<BackupSession> {
         val parent = DocumentFile.fromTreeUri(context, backupUri) ?: throw IOException("Invalid backup directory")
         val root = parent.findFile(BACKUP_DIR_NAME) ?: return emptyList()
         return root.listFiles().filter { it.isDirectory }.mapNotNull { directory ->
             val images = directory.listFiles().filter { it.isFile && it.name?.endsWith(".img") == true }.associate { it.name!!.removeSuffix(".img") to it.uri }
-            if (images.isEmpty()) null else session(directory.name ?: "Backup", directory.findFile("manifest.json")?.uri, images)
-        }.sortedByDescending { it.sessionName }
+            if (images.isEmpty()) null else session(directory.name ?: "Backup", directory.findFile("manifest.json")?.uri, images, fallbackDate = directory.lastModified())
+        }.sortedByDescending { it.createdAt }
     }
     fun createBackupSessionDir(destinationUri: Uri, sessionName: String): Result<DocumentFile> = runCatching {
         val parent = DocumentFile.fromTreeUri(context, destinationUri) ?: error("Invalid backup directory")
