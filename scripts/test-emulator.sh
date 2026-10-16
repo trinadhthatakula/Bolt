@@ -18,7 +18,7 @@ result_file="$(mktemp)"
 trap 'rm -f "$result_file"' EXIT
 "$adb" -s "$serial" shell am instrument -w com.valhalla.bolt.test/androidx.test.runner.AndroidJUnitRunner | tee "$result_file"
 # adb exits zero for assertion failures and crashes; require the runner's success result.
-if ! rg -q '^OK \([0-9]+ tests?\)' "$result_file"; then
+if ! grep -Eq '^OK \([0-9]+ tests?\)' "$result_file"; then
   echo "Instrumentation did not report success." >&2
   exit 1
 fi

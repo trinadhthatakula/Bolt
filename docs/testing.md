@@ -26,7 +26,7 @@ name priority, brand/model fallbacks and unavailable identity fields; `ui_print`
 formatting, flush markers, preserved whitespace, ordinary diagnostics, CRLF and partial
 pipe reads. Partition mutations use a fake backend.
 
-Instrumentation coverage (22 tests including the existing example): pinned runtime
+Instrumentation coverage (23 tests including the existing example): pinned runtime
 hash/applets/execution, actual root UID, successful and failing harmless installer
 fixtures with original arguments/environment/bytes, standalone applets without the
 system PATH, native lock contention, read-only emulator partition backup, strict
@@ -38,7 +38,7 @@ rejection; all 18 Outfit weight/style declarations and visibly heavier bold outl
 theme/font/AMOLED/dynamic-color persistence after recreation; one six-partition recovery
 bundle and its detail flow; simulated restart observation, saved feedback and reopening
 install details; streamed provider text with a readable/raw log toggle and unchanged
-retained output. The harmless failing installer also emits recovery messages through
+retained output, including older Activity logs loaded with a bounded 32 KiB read. The harmless failing installer also emits recovery messages through
 its supplied output FD. Actual dark/light/AMOLED screen captures are generated in app-private
 `files/ui-validation`. The provider exists only in the test APK and uses no production bypass.
 
@@ -102,6 +102,13 @@ installer, restart the emulator or establish real post-flash kernel health.
   33 host tests, debug/test APKs, lint (0 errors, 42 warnings) and the minified unsigned
   release passed. Fresh debug/test APKs passed all 22 instrumentation tests on
   emulator-5584. Android Studio Rabbit 2 Canary 4 Gradle sync completed successfully. No physical partition writes or reboot were run.
+
+- PR review follow-ups: retained historic logs load off the main thread in both
+  modes; Fira Code uses native 400/500 weights verified by actual rendered outlines;
+  the emulator runner uses portable grep; recovery UI assertions await refresh.
+  All 33 host and 23 emulator tests passed, and debug/test/release builds plus lint
+  (0 errors, 42 warnings) passed. The owner-provided Gradle daemon criteria pin JBR 21,
+  with the Foojay resolver configured for toolchain provisioning.
 
 ## Pending before declaring device support or shipping a release
 

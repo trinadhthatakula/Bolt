@@ -66,6 +66,10 @@ class AppearanceInstrumentedTest {
         assertEquals(bodyFontFamily, typography.bodyLarge.fontFamily)
         assertEquals(firaMonoFontFamily, typography.labelLarge.fontFamily)
         assertEquals(bodyFontFamily, typography.titleLargeEmphasized.fontFamily)
+        val fira = (firaMonoFontFamily as FontListFontFamily).fonts.map { it as AndroidFont }
+        assertEquals(listOf(400, 500), fira.map { it.weight.weight })
+        for (font in fira) assertEquals(font.weight.weight, font.typefaceLoader.loadBlocking(context, font)!!.weight)
+        assertTrue(ink(fira[1].typefaceLoader.loadBlocking(context, fira[1])!!) > ink(fira[0].typefaceLoader.loadBlocking(context, fira[0])!!))
     }
 
     @Test fun recoveryLibraryShowsOneBundleAndOpensPartitionDetails() {

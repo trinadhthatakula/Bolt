@@ -25,8 +25,21 @@ fun OperationLogSheet(path: String?, tail: String, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
     var rawMode by rememberSaveable(path) { mutableStateOf(false) }
+    var retained by remember(path) { mutableStateOf("") }
+    LaunchedEffect(path, tail) {
+        if (tail.isEmpty() && path != null) retained = withContext(Dispatchers.IO) {
+            runCatching {
+                java.io.RandomAccessFile(path, "r").use { file ->
+                    val length = file.length()
+                    file.seek((length - 32768).coerceAtLeast(0))
+                    ByteArray((length - file.filePointer).toInt()).also { file.readFully(it) }.toString(Charsets.UTF_8)
+                }
+            }.getOrDefault("")
+        }
+    }
     // The full accumulated tail is reformatted on every update, including split pipe reads.
-    val displayed = remember(tail, rawMode) { if (rawMode) tail else readableOperationLog(tail) }
+    val source = tail.ifEmpty { retained }
+    val displayed = remember(source, rawMode) { if (rawMode) source else readableOperationLog(source) }
     val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null && path != null) scope.launch {
             message = withContext(Dispatchers.IO) { runCatching {

@@ -71,6 +71,7 @@ class ImportInstrumentedTest {
             compose.onNodeWithContentDescription("Recovery", useUnmergedTree = true).performClick()
             compose.onNode(hasScrollAction()).performScrollToNode(hasText("Refresh bundles"))
             compose.onNodeWithText("Refresh bundles").performClick()
+            compose.waitUntil(10000) { compose.onAllNodesWithText("AutoRecovery · 1 partition").fetchSemanticsNodes().isNotEmpty() }
             compose.onNode(hasScrollAction()).performScrollToNode(hasText("AutoRecovery · 1 partition"))
             compose.onNodeWithText("AutoRecovery · 1 partition").performClick()
             compose.onNode(hasScrollAction()).performScrollToNode(hasText("Review restore of recovery"))

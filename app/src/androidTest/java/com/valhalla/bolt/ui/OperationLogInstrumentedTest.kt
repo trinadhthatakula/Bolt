@@ -33,4 +33,23 @@ class OperationLogInstrumentedTest {
             assertEquals(raw, file.readText())
         } finally { file.delete() }
     }
+
+    @Test fun historicLogsLoadABoundedRetainedTailInBothModes() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val raw = "ui_print Historic provider message\nui_print\nInstaller exit: 0\n"
+        val file = File.createTempFile("historic-log-", ".log", context.cacheDir)
+        val original = "OLD_PREFIX\n" + "padding\n".repeat(6000) + raw
+        file.writeText(original)
+        try {
+            compose.setContent { BoltTheme { OperationLogSheet(file.path, "") {} } }
+            compose.waitUntil(5000) { compose.onAllNodes(hasText("Historic provider message", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNode(hasText("Historic provider message", substring = true)).assertIsDisplayed()
+            compose.onNode(hasText("OLD_PREFIX", substring = true)).assertDoesNotExist()
+            compose.onNodeWithText("Raw log").performClick()
+            compose.onNode(hasText(raw, substring = true)).assertIsDisplayed()
+            compose.onNodeWithText("Readable log").performClick()
+            compose.onNode(hasText("ui_print Historic", substring = true)).assertDoesNotExist()
+            assertEquals(original, file.readText())
+        } finally { file.delete() }
+    }
 }

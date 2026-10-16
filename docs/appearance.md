@@ -37,7 +37,8 @@ is a reference source and is not needed to build Bolt.
 ## Fonts and weights
 
 Outfit is copied from Thor's `app/src/main/assets/fonts/outfit_variable.ttf`; Fira Code
-is copied from its `app/src/main/res/font/firacode_variable.ttf`. Their SIL Open Font
+is copied from its `app/src/main/res/font/firacode_variable.ttf`; Bolt bundles both
+under `app/src/main/assets/fonts/` for the native weight loaders. Their SIL Open Font
 License files are included under `app/src/main/assets/licenses/`. Fira Code's license
 comes from the official [6.2 release](https://github.com/tonsky/FiraCode/blob/6.2/LICENSE).
 
@@ -46,7 +47,9 @@ and logs. All nine Outfit weights from 100 through 900 have explicit normal and 
 declarations. As in Thor, italic requests alias upright outlines because the bundled
 Outfit file has no italic axis. The native loader sets both `Typeface.Builder.setWeight`
 and the `wght` variation to preserve actual weight rendering on custom Android skins.
-Emphasized Material typography roles inherit the selected font too.
+Emphasized Material typography roles inherit the selected font too. Fira Code has
+explicit native Normal (400) and Medium (500) weights; its default 300 axis is not
+used for these roles.
 
 Android 7.0/7.1 (API 24/25) uses system typography because this native variable-font
 loader requires API 26. The minimum supported Android version remains unchanged.

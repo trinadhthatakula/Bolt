@@ -15,12 +15,28 @@ import androidx.compose.ui.text.font.FontLoadingStrategy
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import com.valhalla.bolt.R
-import androidx.compose.ui.text.font.Font as ResFont
 
 val firaMonoFontFamily = FontFamily(
-    ResFont(resId = R.font.firacode_variable)
+    listOf(FontWeight.Normal, FontWeight.Medium).map { FiraFont(it) }
 )
+
+private data class FiraFont(override val weight: FontWeight) : AndroidFont(
+    loadingStrategy = FontLoadingStrategy.Blocking,
+    typefaceLoader = FiraTypefaceLoader,
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
+) { override val style = FontStyle.Normal }
+
+private object FiraTypefaceLoader : AndroidFont.TypefaceLoader {
+    override fun loadBlocking(context: Context, font: AndroidFont): Typeface? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return Typeface.MONOSPACE
+        return Typeface.Builder(context.assets, "fonts/firacode_variable.ttf")
+            .setWeight(font.weight.weight)
+            .setItalic(false)
+            .setFontVariationSettings("'wght' ${font.weight.weight}")
+            .build()
+    }
+    override suspend fun awaitLoad(context: Context, font: AndroidFont): Typeface? = loadBlocking(context, font)
+}
 
 // FontWeight selects the matching entry; the explicit wght axis selects its actual outlines.
 // Outfit defaults to wght=100, so even Regular must specify its axis rather than use the default.
