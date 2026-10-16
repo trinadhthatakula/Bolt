@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider android:name="com.valhalla.bolt.model.FixtureProvider" android:authorities="com.valhalla.bolt.test.fixtures" android:exported="true" android:grantUriPermissions="true" />
+    </application>
+</manifest>

@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">Bolt</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme_mode">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="asgard_theme_description">Thor’s Asgardian palette, adapted to your selected theme.</string>
+    <string name="amoled_mode">AMOLED mode</string>
+    <string name="amoled_description">Use pure black backgrounds in dark mode.</string>
+    <string name="dynamic_colors">Dynamic colors</string>
+    <string name="dynamic_colors_description">Use your wallpaper colors instead of the Asgardian palette.</string>
+    <string name="dynamic_colors_unavailable">Available on Android 12 and later.</string>
+    <string name="fonts">Fonts</string>
+    <string name="fonts_description">Choose Thor’s Outfit and Fira Code, or your device’s system fonts.</string>
+    <string name="font_asgard">Asgard</string>
+    <string name="font_system">System</string>
+    <string name="font_preview_heading">A familiar device.</string>
+    <string name="font_preview_body">Keep your originals close and your next step clear.</string>
+    <string name="font_preview_label">KERNEL TOOLS</string>
+    <string name="font_size_description">Both presets follow your device’s text size and accessibility preferences. Android 7 uses the system font fallback.</string>
 </resources>

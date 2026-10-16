@@ -1,440 +1,122 @@
 package com.valhalla.bolt.ui.screens
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.valhalla.bolt.R
-import com.valhalla.bolt.model.FlashedFile
-import com.valhalla.bolt.model.FlashingState
-import com.valhalla.bolt.model.FlashScreenUiState
-import com.valhalla.bolt.ui.theme.firaFontFamily
+import com.valhalla.bolt.model.*
+import com.valhalla.bolt.ui.theme.LocalTechnicalFontFamily
 import com.valhalla.bolt.viewModel.FlasherViewModel
 import org.koin.androidx.compose.koinViewModel
-import java.io.File
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
-@Composable
-fun FlashScreen(
-    modifier: Modifier = Modifier,
-    viewModel: FlasherViewModel = koinViewModel ()
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    val showRebootConfirmation by viewModel.showRebootConfirmation.collectAsStateWithLifecycle()
-    if (showRebootConfirmation) {
-        AlertDialog(
-            onDismissRequest = { viewModel.cancelReboot() },
-            title = { Text("Confirm Reboot") },
-            text = { Text("Are you sure you want to reboot your device now?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.rebootDevice()
-                        viewModel.cancelReboot()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Reboot Now")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.cancelReboot() }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-
-
-    // File picker launcher
-    val filePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri -> uri?.let { viewModel.pickZipFile(it) } }
-    )
-    var showLoggerDialog by remember { mutableStateOf(false) }
-
-    // Show error messages in snackbar
-    uiState.errorMessage?.let { error ->
-        LaunchedEffect(error) {
-            snackbarHostState.showSnackbar(
-                message = error,
-                duration = SnackbarDuration.Long
-            )
-            // Clear error after showing
-            viewModel.resetState()
-        }
-    }
-    Column(
-        modifier = modifier.fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painterResource(R.drawable.launcher_foreground),
-                "Bolt Icon",
-                modifier = Modifier.size(36.dp)
-            )
-            Text(
-                text = "Bolt Kernel Flasher",
-                style = MaterialTheme.typography.titleLargeEmphasized,
-                modifier = Modifier
-                    .weight(1f)
-            )
-            if (uiState.processingSteps.isNotEmpty())
-                IconButton(
-                    onClick = {
-                        showLoggerDialog = true
-                    }
-                ) {
-                    Icon(
-                        painterResource(R.drawable.terminal),
-                        "Open Logger"
-                    )
-                }
-        }
-
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            when {
-                !uiState.isRootCheckComplete -> {
-                    ContainedLoadingIndicator()
-                    Spacer(Modifier.height(16.dp))
-                    Text("Checking root access...")
-                }
-
-                !uiState.isRootAvailable -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Root access not available",
-                            color = Color.Red,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        IconButton(
-                            onClick = { viewModel.checkRootAvailability() },
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.restart_alt_24px),
-                                "Retry"
-                            )
-                        }
-                    }
-
-                    Text("This app requires root access to flash kernels")
-                }
-
-                else -> {
-                    // Main content when root is available
-                    KernelFlasherContent(
-                        uiState = uiState,
-                        onPickZip = {
-                            viewModel.resetState()
-                            filePicker.launch(arrayOf("application/zip"))
-                        },
-                        onFlash = {
-                            showLoggerDialog = true
-                            viewModel.flashKernel()
-                        },
-                        onReboot = { viewModel.confirmReboot() }, // New reboot callback
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    if (uiState.flashedFiles.isNotEmpty()) {
-                        FlashHistoryList(
-                            flashedFiles = uiState.flashedFiles,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1.5f)
-                        )
-                    }
-                }
-            }
-        }
-
-    }
-
-    if (showLoggerDialog) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                showLoggerDialog = false
-            }
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                LoadingIndicator()
-                Text(
-                    "Bolt Logs",
-                    style = MaterialTheme.typography.titleLargeEmphasized,
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp)
-            ) {
-
-                items(uiState.processingSteps) { step ->
-                    var expanded by remember {
-                        mutableStateOf(true)
-                    }
-                    Row(
-                        modifier = Modifier
-                            .padding(3.dp)
-                            .clickable {
-                                expanded = !expanded
-                            }) {
-                        Column {
-                            Text(
-                                step.title,
-                                style = MaterialTheme.typography.bodySmallEmphasized,
-                                fontFamily = firaFontFamily
-                            )
-                            if (expanded)
-                                Text(
-                                    "-${step.description}",
-                                    style = MaterialTheme.typography.bodySmallEmphasized,
-                                    fontFamily = firaFontFamily
-                                )
-                        }
-                    }
-                }
-            }
-            if (uiState.flashingState == FlashingState.ERROR || uiState.flashingState == FlashingState.SUCCESS || uiState.flashingState == FlashingState.SUCCESS_REBOOT_NEEDED) {
-                Button(
-                    onClick = { showLoggerDialog = false },
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Text("Done")
-                }
-            }
-        }
-    }
-
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun KernelFlasherContent(
-    uiState: FlashScreenUiState,
-    onPickZip: () -> Unit,
-    onFlash: () -> Unit,
-    onReboot: () -> Unit, // New reboot callback
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        when (uiState.flashingState) {
-
-            FlashingState.VALIDATING_ZIP -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Validating zip file...", fontSize = 18.sp)
-                    Spacer(Modifier.height(24.dp))
-                    LoadingIndicator()
-                }
-            }
-
-            FlashingState.IDLE -> {
-                Button(
-                    onClick = onPickZip,
-                    enabled = uiState.copiedZipPath == null
-                ) {
-                    Text("Select Kernel Zip")
-                }
-
-                uiState.copiedZipPath?.let { path ->
-                    Spacer(Modifier.height(24.dp))
-                    Text("Selected: ${File(path).name}")
-
-                    Spacer(Modifier.height(16.dp))
-                    Button(onClick = onFlash) {
-                        Text("Flash Kernel")
-                    }
-                }
-            }
-
-            FlashingState.COPYING_ZIP,
-            FlashingState.EXTRACTING,
-            FlashingState.FLASHING -> {
-                Text(
-                    text = when (uiState.flashingState) {
-                        FlashingState.COPYING_ZIP -> "Copying zip file..."
-                        FlashingState.EXTRACTING -> "Extracting files..."
-                        FlashingState.FLASHING -> "Flashing kernel..."
-                        else -> "Processing..."
-                    },
-                    fontSize = 18.sp
-                )
-                Spacer(Modifier.height(24.dp))
-                LoadingIndicator()
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .padding(top = 16.dp)
-                )
-            }
-
-            FlashingState.SUCCESS -> {
-                Text("✓ Flashing Successful", color = Color.Green, fontSize = 20.sp)
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = { /* Reset state */ }) {
-                    Text("Flash Another Kernel")
-                }
-            }
-
-            FlashingState.ERROR -> {
-                Text("Flashing Failed", color = Color.Red, fontSize = 20.sp)
-                // Show specific instructions for invalid zip
-                if (uiState.errorMessage == "Invalid AnyKernel3 zip") {
-                    Text("Please select a valid AnyKernel3 zip file containing:")
-                    Text("- anykernel.sh at root level", fontWeight = FontWeight.Bold)
-                    Text("- or update-binary in META-INF", fontWeight = FontWeight.Bold)
-                }
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = { onPickZip() }) {
-                    Text("Try Again")
-                }
-            }
-
-            FlashingState.SUCCESS_REBOOT_NEEDED -> {
-                Text("✓ Flashing Successful", color = Color.Green, fontSize = 20.sp)
-                Text("Reboot required to apply changes", color = Color.Yellow)
-                Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = onReboot,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
-                ) {
-                    Text("Reboot Device")
-                }
-            }
-
-            FlashingState.REBOOTING -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Rebooting device...", fontSize = 18.sp)
-                    Spacer(Modifier.height(24.dp))
-                    LoadingIndicator()
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        "If device doesn't reboot automatically, please reboot manually",
-                        color = Color.Yellow
-                    )
-                }
-            }
-
-            else -> {}
-        }
-    }
-}
+import org.koin.compose.koinInject
 
 @Composable
-fun FlashHistoryList(
-    flashedFiles: List<FlashedFile>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text("Flash History:", fontWeight = FontWeight.Bold)
-
-        if (flashedFiles.isEmpty()) {
-            Text("No flash history available", modifier = Modifier.padding(top = 8.dp))
+fun FlashScreen(modifier: Modifier = Modifier, viewModel: FlasherViewModel = koinViewModel(), incomingUri: Uri? = null, onImportConsumed: () -> Unit = {}, onRecovery: () -> Unit = {}, onDone: () -> Unit = {}) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val operations: OperationCoordinator = koinInject()
+    val operation by operations.status.collectAsStateWithLifecycle()
+    val reboot by viewModel.showRebootConfirmation.collectAsStateWithLifecycle()
+    var logs by remember { mutableStateOf(false) }
+    var details by rememberSaveable { mutableStateOf(false) }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::pickZipFile) }
+    val busy = operation?.running == true || operation?.uncertain == true || state.isZipValidating || state.flashingState == FlashingState.VALIDATING_ZIP
+    val choose: () -> Unit = { picker.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }
+    if (incomingUri != null) AlertDialog(onDismissRequest = onImportConsumed, title = { Text("Import AnyKernel ZIP?") },
+        text = { Text("Bolt will copy and validate this document. Installation requires a separate review.") },
+        confirmButton = { TextButton(enabled = !busy, onClick = { viewModel.pickZipFile(incomingUri); onImportConsumed() }) { Text("Import ZIP") } },
+        dismissButton = { TextButton(onClick = onImportConsumed) { Text("Cancel") } })
+    state.reviewText?.let { review -> AlertDialog(onDismissRequest = viewModel::dismissReview, title = { Text("Review install") },
+        text = { LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            item { Text(state.fileName, style = MaterialTheme.typography.titleMedium) }
+            item { Text("${state.deviceName} · ${state.activeSlot?.let { "slot ${it.removePrefix("_").uppercase()}" } ?: "no slot suffix"}") }
+            item { Text("Archive, root, power and recovery space checked", style = MaterialTheme.typography.bodyMedium) }
+            item { Text("AutoRecovery · ${state.recoveryTargets.size} partitions", style = MaterialTheme.typography.titleSmall); Spacer(Modifier.height(8.dp)); PartitionBadges(state.recoveryTargets) }
+            item { Text("Your originals are saved before the installer starts. The saved bundle appears in Recovery.", style = MaterialTheme.typography.bodyMedium) }
+            item { Text(review, style = MaterialTheme.typography.bodySmall) }
+        } },
+        confirmButton = { TextButton(enabled = !busy, onClick = viewModel::flashKernel) { Text("Flash kernel") } },
+        dismissButton = { TextButton(onClick = viewModel::dismissReview) { Text("Back") } }) }
+    if (reboot) AlertDialog(onDismissRequest = viewModel::cancelReboot, title = { Text("Reboot device?") },
+        text = { Text("Restart now to load the installed kernel. Your recovery bundle and installer log are saved.") },
+        confirmButton = { TextButton(enabled = !busy, onClick = { viewModel.cancelReboot(); viewModel.rebootDevice() }) { Text("Reboot now") } },
+        dismissButton = { TextButton(onClick = viewModel::cancelReboot) { Text("Later") } })
+    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        val active = operation?.takeIf { it.kind == "Flash" && it.running }
+        if (active != null) {
+            item {
+                Text(if (active.phase == "Executing") "Installing your kernel." else "Saving your way back.", style = MaterialTheme.typography.headlineLarge)
+                Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(if (active.phase == "Executing") "Original installer running" else active.message, style = MaterialTheme.typography.titleLarge)
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                    val saved = active.outcomes.count { it.state == "Backed up" }
+                    if (active.outcomes.isNotEmpty()) Text("$saved original images saved", style = MaterialTheme.typography.labelMedium)
+                    active.outcomes.forEach { Text("${it.partition} · ${it.state}", style = MaterialTheme.typography.bodySmall, fontFamily = LocalTechnicalFontFamily.current) }
+                    Text("The operation continues if you leave this screen. Writes cannot safely be cancelled.", style = MaterialTheme.typography.bodyMedium)
+                    OutlinedButton(onClick = { logs = true }) { Icon(Icons.Outlined.Terminal, null); Spacer(Modifier.width(8.dp)); Text("View live log") }
+                } }
+            }
+        } else if (state.flashingState in setOf(FlashingState.SUCCESS, FlashingState.SUCCESS_REBOOT_NEEDED)) {
+            val journey = state.journey
+            item {
+                Icon(Icons.Outlined.CheckCircle, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                Text(journey?.statusLabel ?: "Kernel installed.", style = MaterialTheme.typography.headlineLarge)
+                Text(journey?.fileName ?: state.fileName.ifEmpty { "Previous kernel" }, style = MaterialTheme.typography.titleMedium)
+            }
+            item { Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Installer completed · exit 0", style = MaterialTheme.typography.labelLarge)
+                Text(when (journey?.bootStatus) {
+                    BootStatus.REBOOT_OBSERVED -> "You’re back in Bolt after a detected device restart. How is the kernel working?"
+                    BootStatus.USER_CONFIRMED -> if (journey.bootObservedAt == null) "You confirmed that you rebooted and the kernel is working." else "Your feedback is saved with this install."
+                    BootStatus.ISSUE_REPORTED -> "Your feedback is saved. Inspect the originals and installer log before another operation."
+                    else -> "Reboot when you’re ready to apply the kernel."
+                }, style = MaterialTheme.typography.bodyLarge)
+                if (state.flashingState == FlashingState.SUCCESS_REBOOT_NEEDED) Button(enabled = !busy, onClick = viewModel::confirmReboot, modifier = Modifier.fillMaxWidth()) { Text("Reboot device") }
+                if (journey != null && journey.bootStatus == BootStatus.REBOOT_PENDING) OutlinedButton(onClick = { viewModel.confirmKernelWorking(true) }, modifier = Modifier.fillMaxWidth()) { Text("I rebooted and it’s working") }
+                if (journey?.bootStatus == BootStatus.REBOOT_OBSERVED) Button(onClick = { viewModel.confirmKernelWorking(true) }, modifier = Modifier.fillMaxWidth()) { Text("Working well") }
+                if (journey != null && journey.bootStatus != BootStatus.ISSUE_REPORTED) TextButton(onClick = { viewModel.confirmKernelWorking(false) }) { Text("I noticed a problem") }
+            } } }
+            item { OutlinedButton(onClick = onRecovery, modifier = Modifier.fillMaxWidth()) { Text("Open saved recovery") } }
+            item { TextButton(onClick = { details = !details }) { Text("Install details") } }
+            if (details) item {
+                Text("Installer completion, device restart and your feedback are separate observations. A restart does not independently verify every kernel feature.", style = MaterialTheme.typography.bodySmall)
+                journey?.bootObservedAt?.let { Text("Restart observed ${readableDate(it)}", style = MaterialTheme.typography.bodySmall) }
+                if (journey?.bootIdBefore == null) Text("This install has no recorded pre-flash boot identity. Its reboot can be confirmed by you.", style = MaterialTheme.typography.bodySmall)
+            }
+            item { TextButton(enabled = !busy, onClick = { viewModel.resetState(); details = false }) { Text("Install another kernel") }; TextButton(onClick = onDone) { Text("Back to Overview") } }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .weight(1f)
-            ) {
-                items(flashedFiles) { file ->
-                    HistoryItem(file = file)
-                }
+            item { Text(if (state.copiedZipPath == null) "Your next kernel." else "Ready for review.", style = MaterialTheme.typography.headlineLarge) }
+            item {
+                Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Icon(Icons.Outlined.Bolt, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
+                    Text(if (state.copiedZipPath == null) "Choose an AnyKernel ZIP" else state.fileName, style = MaterialTheme.typography.titleLarge)
+                    Text("Bolt keeps your original partition images together in an automatic recovery bundle.", style = MaterialTheme.typography.bodyMedium)
+                    Button(enabled = !busy, onClick = choose, modifier = Modifier.fillMaxWidth()) { Text(if (state.copiedZipPath == null) "Select kernel ZIP" else "Change ZIP") }
+                    if (state.copiedZipPath != null) {
+                        OutlinedButton(enabled = !busy && state.isRootAvailable, onClick = viewModel::prepareFlash, modifier = Modifier.fillMaxWidth()) { Text("Review install") }
+                        TextButton(onClick = { details = !details }) { Text("Technical details") }
+                        if (details) Text("SHA-256: ${state.sha256}", style = MaterialTheme.typography.bodySmall, fontFamily = LocalTechnicalFontFamily.current)
+                    }
+                } }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun HistoryItem(file: FlashedFile) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = file.fileName,
-                    style = MaterialTheme.typography.titleSmallEmphasized,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1
-                )
-                /*Text(
-                    text = if (file.success) " ✓ " else " ✗ ",
-                    color = if (file.success) Color.Green else Color.Red,
-                    fontSize = 20.sp
-                )*/
+            if (state.isZipValidating || state.flashingState == FlashingState.VALIDATING_ZIP) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Checking document and device…") }
+            if (!state.isRootCheckComplete) item { Text("Checking root access…") }
+            else if (!state.isRootAvailable) item {
+                Text("Root is required to install. You can still choose and inspect a ZIP.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                TextButton(enabled = !busy, onClick = viewModel::checkRootAvailability) { Text("Check root again") }
             }
-
-            Text(
-                file.flashDate,
-                style = MaterialTheme.typography.bodyMediumEmphasized,
-                color = Color.Gray
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(file.outputSummary, fontSize = 14.sp)
+            if (state.flashingState == FlashingState.ERROR) item { OutlinedButton(onClick = onRecovery) { Text("Inspect recovery") }; TextButton(enabled = !busy, onClick = viewModel::resetState) { Text("Choose another ZIP") } }
         }
+        state.errorMessage?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
+        if (state.logPath != null && active == null) item { TextButton(onClick = { logs = true }) { Text("View installer log") } }
     }
+    if (logs) OperationLogSheet(state.logPath ?: operation?.logPath, if (operation?.kind == "Flash") operation?.tail.orEmpty() else state.flashOutput) { logs = false }
 }

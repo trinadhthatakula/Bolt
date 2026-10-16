@@ -1,302 +1,126 @@
 package com.valhalla.bolt.ui.screens
 
-import android.R.attr.text
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import android.content.Intent
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.valhalla.bolt.R
-import com.valhalla.bolt.model.BackupFile
-import com.valhalla.bolt.model.RestoreMode
-import com.valhalla.bolt.model.RestoreState
-import com.valhalla.bolt.ui.theme.firaFontFamily
+import com.valhalla.bolt.model.*
+import com.valhalla.bolt.ui.theme.LocalTechnicalFontFamily
 import com.valhalla.bolt.viewModel.RestoreViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RestoreScreen(
-    modifier: Modifier = Modifier,
-    viewModel: RestoreViewModel = koinViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var backupToRestore by remember { mutableStateOf<BackupFile?>(null) }
-    var finalBackUp by remember { mutableStateOf<BackupFile?>(null) }
-    var showLoggerDialog by remember { mutableStateOf(false) }
-
-    // Confirmation Dialog for the dangerous restore action
-    if (backupToRestore != null) {
-        AlertDialog(
-            onDismissRequest = { backupToRestore = null },
-            title = { Text("⚠️ Confirm Restore") },
-            text = { Text("Are you sure you want to restore '${backupToRestore!!.partitionName}'? This can make your device unbootable if the backup is incompatible. This action cannot be undone.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        finalBackUp = backupToRestore
-                        backupToRestore = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Restore Now")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { backupToRestore = null }) {
-                    Text("Cancel")
-                }
-            }
-        )
+fun RestoreScreen(modifier: Modifier = Modifier, viewModel: RestoreViewModel = koinViewModel(), initialSessionId: String? = null, onBackup: () -> Unit = {}) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val operations: OperationCoordinator = koinInject()
+    val operation by operations.status.collectAsStateWithLifecycle()
+    val busy = operation?.running == true || operation?.uncertain == true
+    val context = LocalContext.current
+    var sessionId by rememberSaveable { mutableStateOf(initialSessionId) }
+    var selectedName by rememberSaveable { mutableStateOf<String?>(null) }
+    var review by rememberSaveable { mutableStateOf(false) }
+    var both by rememberSaveable { mutableStateOf(false) }
+    var filter by rememberSaveable { mutableStateOf("All") }
+    var result by rememberSaveable { mutableStateOf(false) }
+    var details by rememberSaveable { mutableStateOf(false) }
+    var logs by remember { mutableStateOf(false) }
+    var providerError by remember { mutableStateOf<String?>(null) }
+    val session = state.backupSessions.firstOrNull { it.id == sessionId }
+    val selected = session?.files?.firstOrNull { it.partitionName == selectedName }
+    LaunchedEffect(initialSessionId) { if (initialSessionId != null) sessionId = initialSessionId }
+    LaunchedEffect(sessionId, session?.files) {
+        if (session != null && session.files.none { it.partitionName == selectedName }) selectedName = session.files.firstOrNull()?.partitionName
     }
-
-    if (finalBackUp != null)
-        finalBackUp?.let { fb ->
-            if (uiState.activeSlotSuffix != null) {
-                AbRestoreDialog(
-                    backupFile = fb,
-                    onDismiss = {
-                        finalBackUp = null
-                        backupToRestore = null
-                    },
-                    onRestore = { mode ->
-                        viewModel.restoreSelectedBackup(fb, mode)
-                        backupToRestore = null
-                    }
-                )
-            } else {
-                // Otherwise, show the simple confirmation dialog
-                SimpleRestoreDialog(
-                    backupFile = fb,
-                    onDismiss = { backupToRestore = null },
-                    onRestore = {
-                        viewModel.restoreSelectedBackup(fb, RestoreMode.ACTIVE_SLOT_ONLY)
-                        backupToRestore = null
-                    }
-                )
-            }
-        }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Header
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painterResource(R.drawable.unarchive),
-                "Restore Icon",
-                modifier = Modifier.size(36.dp)
-            )
-            Text(
-                "Restore Backup ⚠️ ",
-                style = MaterialTheme.typography.titleLargeEmphasized,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
-            )
-
-            if (uiState.processingSteps.isNotEmpty()) {
-                IconButton(onClick = { showLoggerDialog = true }) {
-                    Icon(painterResource(R.drawable.terminal), "Open Logger")
-                }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        when (uiState.restoreState) {
-            RestoreState.LISTING, RestoreState.RESTORING -> Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
-
-            RestoreState.ERROR -> Text(
-                uiState.errorMessage ?: "An unknown error occurred.",
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center
-            )
-
-            else -> {
-                if (viewModel.getBackUpDirectory() == null) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            "No backup location has been set.\n\nPlease perform a backup first to set the directory.",
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else if (uiState.backupSessions.isEmpty()) {
-                    Text(
-                        "No backups found in the saved directory.",
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        uiState.backupSessions.forEach { session ->
-                            item {
-                                Text(
-                                    text = session.sessionName.replace("_", " ")
-                                        .replace("-", ":"),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
-                                )
-                                HorizontalDivider()
-                            }
-                            // List of backup files within that session
-                            items(session.files) { backup ->
-                                BackupItem(
-                                    backup = backup,
-                                    onRestoreClicked = { backupToRestore = it }
-                                )
-                            }
+    BackHandler(sessionId != null || result) { sessionId = null; result = false; review = false }
+    val folder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            viewModel.saveBackupDirectory(uri)
+        }.onFailure { providerError = "Cannot retain backup directory permission: ${it.message}" }
+    }
+    val base = selected?.partitionName?.let { it.removeSuffix(PartitionPolicy.suffix(it) ?: "") }
+    val bothAvailable = selected != null && base != null && PartitionPolicy.suffix(selected.partitionName) != null && state.activeSlotSuffix != null && selected.sessionImages.keys.containsAll(listOf("${base}_a", "${base}_b"))
+    val inactive = selected?.partitionName?.let { PartitionPolicy.suffix(it)?.let { suffix -> state.activeSlotSuffix != null && suffix != state.activeSlotSuffix } } == true
+    if (review && selected != null) AlertDialog(onDismissRequest = { review = false }, title = { Text("Review restore") },
+        text = { LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item { Text(session!!.displayTitle, style = MaterialTheme.typography.titleMedium); Text(session.subtitle, style = MaterialTheme.typography.bodySmall) }
+            item { Text(if (both) "Original images: ${base}_a and ${base}_b" else "Original image: ${selected.partitionName}", style = MaterialTheme.typography.titleSmall) }
+            item { Text("Device identity, target capacity and source digest are checked before the first write. Each written image is then verified by readback.") }
+            if (bothAvailable) item { Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { Checkbox(checked = both, onCheckedChange = { both = it }); Text("Restore both original slots", style = MaterialTheme.typography.bodyMedium) } }
+            if (inactive && !both) item { Text("This image is from the inactive slot. Select both original slots to restore this pair, or choose an active-slot image.", color = MaterialTheme.colorScheme.error) }
+            item { Text("Writes cannot safely be cancelled.", style = MaterialTheme.typography.bodySmall) }
+        } },
+        confirmButton = { TextButton(enabled = !busy && state.isRootAvailable && selected.validationError == null && (!inactive || both), onClick = {
+            review = false; result = true
+            viewModel.restoreSelectedBackup(selected, if (both) RestoreMode.BOTH_SLOTS else RestoreMode.ACTIVE_SLOT_ONLY)
+        }) { Text(if (both) "Restore both original slots" else "Restore ${selected.partitionName}") } },
+        dismissButton = { TextButton(onClick = { review = false }) { Text("Back") } })
+    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        val restoring = operation?.takeIf { it.kind == "Restore" && it.running }
+        if (restoring != null) item {
+            Text("Restoring originals.", style = MaterialTheme.typography.headlineLarge)
+            Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(restoring.message, style = MaterialTheme.typography.titleMedium)
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                restoring.outcomes.forEach { Text("${it.partition} · ${it.state}", style = MaterialTheme.typography.bodyMedium) }
+                TextButton(onClick = { logs = true }) { Text("View live log") }
+            } }
+        } else if (result && operation?.kind == "Restore") {
+            item { OperationResultCard(operation!!) { logs = true } }
+            item { OutlinedButton(onClick = { result = false; sessionId = null }, modifier = Modifier.fillMaxWidth()) { Text("Back to recovery bundles") } }
+        } else if (session != null) {
+            item { TextButton(onClick = { sessionId = null; review = false }) { Text("All recovery bundles") }; Text(session.displayTitle, style = MaterialTheme.typography.headlineMedium); Text(session.subtitle, style = MaterialTheme.typography.bodyMedium) }
+            item { PartitionBadges(session.files.map { it.partitionName }) }
+            item { Text("Choose one original image", style = MaterialTheme.typography.titleMedium) }
+            items(session.files, key = { it.partitionName }) { backup ->
+                OutlinedCard(onClick = { selectedName = backup.partitionName; both = false }, modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        RadioButton(selected = selectedName == backup.partitionName, onClick = { selectedName = backup.partitionName; both = false })
+                        Column(Modifier.weight(1f)) {
+                            Text(backup.partitionName, style = MaterialTheme.typography.titleMedium, fontFamily = LocalTechnicalFontFamily.current)
+                            backup.manifest?.images?.firstOrNull { it.partition == backup.partitionName }?.let { image -> Text("${readableSize(image.size)} · ${image.slot?.removePrefix("_")?.uppercase()?.let { "slot $it" } ?: "no slot suffix"}", style = MaterialTheme.typography.bodySmall) }
+                            backup.validationError?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
                         }
                     }
                 }
             }
-        }
-    }
-
-    if (showLoggerDialog) {
-        ModalBottomSheet(onDismissRequest = { showLoggerDialog = false }) {
-            // ... (Logger UI - This can be extracted into a common composable)
-            LazyColumn(modifier = Modifier.padding(16.dp)) {
-                items(uiState.processingSteps) { step ->
-                    Text(
-                        text = "${step.title}: ${step.description}",
-                        fontFamily = firaFontFamily,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            item { Button(enabled = selected != null && selected.validationError == null && !busy && state.isRootAvailable, onClick = { both = false; review = true }, modifier = Modifier.fillMaxWidth()) { Text("Review restore of ${selectedName ?: "image"}") } }
+            item { TextButton(onClick = { details = !details }) { Text("Manifest and source details") } }
+            if (details) item {
+                Text("Manifest present. Size, device and digests are validated at restore time.", style = MaterialTheme.typography.bodySmall)
+                selected?.manifest?.images?.firstOrNull { it.partition == selected.partitionName }?.let { image -> Text("Target: ${image.targetPath}\nSHA-256: ${image.sha256}", style = MaterialTheme.typography.bodySmall, fontFamily = LocalTechnicalFontFamily.current) }
             }
-        }
-    }
-}
-
-@Composable
-private fun BackupItem(backup: BackupFile, onRestoreClicked: (BackupFile) -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(backup.partitionName, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    backup.fileName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        } else {
+            item { Text("Your recovery library.", style = MaterialTheme.typography.headlineLarge); Text("Open a bundle to inspect its original images.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            item { FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { listOf("All", "AutoRecovery", "My backups").forEach { label -> FilterChip(selected = filter == label, onClick = { filter = label }, label = { Text(label) }) } } }
+            val sessions = state.backupSessions.filter { filter == "All" || if (filter == "AutoRecovery") it.isAutomatic else !it.isAutomatic }
+            if (sessions.isEmpty()) item {
+                Card { Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(Icons.Outlined.FolderOpen, null, Modifier.size(32.dp))
+                    Text("No recovery bundles here yet", style = MaterialTheme.typography.titleMedium)
+                    Text("Automatic recovery is saved before installation. You can also create a backup or choose its directory.")
+                    OutlinedButton(onClick = onBackup) { Text("Create backup") }
+                } }
             }
-            Button(onClick = { onRestoreClicked(backup) }) {
-                Text("Restore")
-            }
+            items(sessions, key = { it.id + it.source }) { bundle -> RecoveryBundleCard(bundle) { sessionId = bundle.id; details = false } }
+            item { OutlinedButton(enabled = !busy, onClick = { folder.launch(null) }, modifier = Modifier.fillMaxWidth()) { Text("Choose backup directory") }; TextButton(enabled = !busy, onClick = { viewModel.checkRootAvailability(); viewModel.refresh() }) { Text("Refresh bundles") } }
         }
+        if (!state.isRootAvailable) item { Text("Root is required to restore. Bundles remain available for inspection.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        state.errorMessage?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
+        providerError?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
     }
-}
-
-
-@Composable
-fun AbRestoreDialog(
-    backupFile: BackupFile,
-    onDismiss: () -> Unit,
-    onRestore: (RestoreMode) -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "⚠️ A/B Restore Option",
-                    style = MaterialTheme.typography.titleLargeEmphasized,
-                    modifier = Modifier.padding(5.dp)
-                )
-                Text(
-                    "You are on an A/B device. Restoring to the inactive slot can be useful but is an advanced operation.\n\nHow do you want to restore '${backupFile.partitionName}'?",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
-                ) {
-                    Button(onClick = { onRestore(RestoreMode.BOTH_SLOTS) }) {
-                        Text("Both Slots")
-                    }
-                    Button(onClick = { onRestore(RestoreMode.ACTIVE_SLOT_ONLY) }) {
-                        Text("Active Slot")
-                    }
-                }
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun SimpleRestoreDialog(
-    backupFile: BackupFile,
-    onDismiss: () -> Unit,
-    onRestore: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("⚠️ Confirm Restore") },
-        text = { Text("Are you sure you want to restore '${backupFile.partitionName}'? This action cannot be undone.") },
-        confirmButton = {
-            Button(
-                onClick = onRestore,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            ) { Text("Restore Now") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
-    )
+    if (logs) OperationLogSheet(operation?.logPath, operation?.tail.orEmpty()) { logs = false }
 }
