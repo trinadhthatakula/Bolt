@@ -1,0 +1,71 @@
+{
+  "capturedFrom": "Rooted ARM64 API 37 emulator",
+  "sourceCommit": "See docs/marketing/README.md",
+  "noPartitionWrites": true,
+  "screenshots": [
+    {
+      "name": "01-overview",
+      "source": "captures/01-overview.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt dark Overview with root ready, device information and a sample six-partition AutoRecovery bundle."
+    },
+    {
+      "name": "02-install",
+      "source": "captures/02-install.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt Install kernel screen awaiting an AnyKernel ZIP selection."
+    },
+    {
+      "name": "03-recovery",
+      "source": "captures/03-recovery.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt Recovery library showing one sample AutoRecovery bundle with six partition badges."
+    },
+    {
+      "name": "04-originals",
+      "source": "captures/04-originals.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt sample recovery bundle details with original partition image choices."
+    },
+    {
+      "name": "05-backup",
+      "source": "captures/05-backup.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt Create backup screen with destination selection and discovered emulator partition choices."
+    },
+    {
+      "name": "06-appearance-light",
+      "source": "captures/06-appearance-light.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt Appearance settings with the Asgardian light theme selected."
+    },
+    {
+      "name": "07-appearance-amoled",
+      "source": "captures/07-appearance-amoled.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt Appearance settings in the AMOLED dark theme."
+    },
+    {
+      "name": "08-readable-log",
+      "source": "captures/08-readable-log.png",
+      "width": 1080,
+      "height": 1920,
+      "fixture": true,
+      "alt": "Bolt readable operation log with clearly labeled sample provider output and raw log export."
+    }
+  ]
+}

@@ -15,6 +15,7 @@
     <string name="fonts_description">Choose Thor’s Outfit and Fira Code, or your device’s system fonts.</string>
     <string name="font_asgard">Asgard</string>
     <string name="font_system">System</string>
+    <string name="font_option_description">%1$s font</string>
     <string name="font_preview_heading">A familiar device.</string>
     <string name="font_preview_body">Keep your originals close and your next step clear.</string>
     <string name="font_preview_label">KERNEL TOOLS</string>

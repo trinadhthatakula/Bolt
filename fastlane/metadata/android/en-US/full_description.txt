@@ -1,36 +1,21 @@
-<b>Bolt Kernel Flasher</b> is a modern Android app designed to make flashing AnyKernel zips on supported devices simple and safe. Built entirely with Kotlin, it features a sleek Material 3 Design and a Jetpack Compose UI for a seamless user experience.
+This listing previews Bolt’s upcoming Cockpit release. The currently published GitHub APK may predate the interface and features shown here. Check its release notes before downloading.
 
-<br><br>
-<b>Key Features:</b>
-<ul>
-  <li>100% Kotlin codebase</li>
-  <li>Material 3 Design</li>
-  <li>Jetpack Compose UI</li>
-  <li>Simple and fast kernel flashing</li>
-  <li>Supports AnyKernel zips</li>
-  <li>Minimal APK size (around 1.0 MB)</li>
-  <li>Fully reproducible, copylefted libre software (GPLv3.0)</li>
-</ul>
+Bolt is an open-source kernel flasher for rooted Android devices. Choose a compatible script-based AnyKernel ZIP, review the device and recovery plan, and run the package’s original installer. Receiving or sharing a ZIP never starts flashing automatically.
 
-<br>
-<b>How It Works:</b>
-<ul>
-  <li>Select an AnyKernel zip from your device</li>
-  <li>Flash it to your device with a single tap</li>
-  <li>Enjoy a modern, intuitive interface</li>
-</ul>
+The Cockpit brings Overview, Recovery and Activity together:
+• Device information and a clear next step.
+• Automatic snapshots of discovered supported recovery targets before installation.
+• One compact recovery card per bundle, with partition badges and original image details.
+• Manual backups through Android’s document picker.
+• Manifest checks for device identity, target capacity and image digests before restore writes, followed by readback verification.
+• Retained operation results, readable provider messages and full raw log export.
+• Separate installer completion, device restart and your health feedback.
+• Asgardian light/dark themes, AMOLED mode, Android 12+ dynamic colors, and Outfit/Fira Code or system fonts.
 
-<br>
-<b>Warnings:</b>
-<ul>
-  <li><b>Use at your own risk.</b> Flashing kernels can potentially brick your device.</li>
-  <li><b>Backup recommended:</b> Always back up your data and current boot image before proceeding.</li>
-  <li><b>Check compatibility:</b> Ensure the kernel format and boot image compression match your device requirements. Mismatches may cause bootloops.</li>
-  <li><b>Device warranty:</b> Flashing custom kernels may void your device warranty.</li>
-  <li><b>Data loss:</b> Incorrect usage can result in data loss or device malfunction.</li>
-  <li><b>No liability:</b> The developers are not responsible for any damage caused by using this tool.</li>
-</ul>
+Requires Android 7.0 or newer, working root access and a kernel package designed for your exact device and firmware. Kernel flashing can cause bootloops or data loss. Keep off-device backups and a working recovery route. Automatic recovery covers discovered targets and cannot capture every change a root installer might make. App-private snapshots are lost when app data is cleared or Bolt is uninstalled.
 
-<br>
-<b>License:</b><br>
-This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+Raw image flashing, KernelSU LKM installation and inactive-slot OTA preparation are not implemented. Device support depends on the package, firmware and root environment; see the repository’s validation notes.
+
+Bolt has no advertising or analytics SDKs. Third-party kernel scripts execute as root and can independently access files or the network. Review exported logs before sharing them publicly.
+
+Download APKs and browse the GPL-3.0 source at https://github.com/trinadhthatakula/Bolt

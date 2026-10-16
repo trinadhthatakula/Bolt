@@ -1,0 +1,73 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  title="Privacy — Bolt"
+  description="How Bolt and its website handle device data, local backups, appearance preferences and GitHub downloads."
+>
+  <main id="main" class="wrap prose">
+    <span class="eyebrow">PRIVACY · OCTOBER 17, 2026</span>
+    <h1>
+      Your device.
+      <br />
+      Your data.
+    </h1>
+    <p>
+      Bolt’s Android app has no advertising or analytics SDKs and does not
+      request Android’s internet permission. Its app-owned settings, operation
+      records, logs and recovery snapshots are stored locally.
+    </p>
+    <h2>Local files and permissions</h2>
+    <p>
+      Bolt uses root for privileged kernel, backup and restore operations.
+      Android’s document picker grants access to the ZIPs and backup or log
+      destinations you choose. Foreground-service and wake-lock permissions keep
+      operations running; notification permission lets Bolt show operation
+      notifications.
+    </p>
+    <p>
+      Device identity and build information are recorded with recovery manifests
+      to help validate restores. Device-bound snapshots, journals and logs are
+      excluded from Android cloud backup and device transfer. They are lost if
+      you clear app data or uninstall Bolt. Files you export remain wherever you
+      save them.
+    </p>
+    <h2>Kernel packages</h2>
+    <p>
+      A kernel ZIP contains third-party scripts that run with root access. Those
+      scripts can independently access files, modify your device or perform
+      network operations. Bolt’s own lack of an internet permission does not
+      restrict a root installer. Use packages from developers you trust.
+    </p>
+    <h2>This website</h2>
+    <p>
+      This static website has no analytics, advertising scripts or cookies. If
+      you change its color theme, it saves that choice in your browser’s local
+      storage under <code>bolt-web-theme</code>. Fonts and screenshots are
+      hosted with the site.
+    </p>
+    <p>
+      When the download section approaches view, your browser requests the
+      latest release information from GitHub’s public API. GitHub receives
+      normal request information such as your IP address. Download links and
+      source links also take you to GitHub. See{" "}
+      <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">
+        GitHub’s privacy statement
+      </a>
+      .
+    </p>
+    <p>
+      The hosting provider serves the page and may keep standard operational
+      request logs. Hosting and domain configuration are managed by the project
+      owner.
+    </p>
+    <h2>Sharing logs and getting help</h2>
+    <p>
+      Exported logs can include device information and text emitted by a kernel
+      installer. Review them before sharing them in a public issue. For
+      questions, contact the maintainer through the{" "}
+      <a href="https://github.com/trinadhthatakula/Bolt">Bolt repository</a>.
+    </p>
+  </main>
+</Base>

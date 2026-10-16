@@ -1,0 +1,99 @@
+---
+import { RELEASES_URL } from "../lib/releases.mjs";
+---
+
+<section
+  id="download"
+  class="download-section"
+  aria-labelledby="download-title"
+>
+  <div>
+    <span class="eyebrow">OPEN SOURCE. YOUR DEVICE.</span>
+    <h2 id="download-title">
+      Ready for your
+      <br />
+      next kernel?
+    </h2>
+    <p>
+      Get Bolt directly from GitHub. Android 7.0 or newer, root access, and a
+      kernel package compatible with your device.
+    </p>
+  </div>
+  <div class="download-panel">
+    <span class="eyebrow">GITHUB RELEASES</span>
+    <p id="release-status" role="status" aria-live="polite">
+      The latest published APK is available on GitHub.
+    </p>
+    <div id="apk-links"></div>
+    <a class="button primary" id="release-page" href={RELEASES_URL}>
+      View latest release <span aria-hidden="true">↗</span>
+    </a>
+    <p class="small" id="release-notice">
+      Screenshots preview the upcoming Cockpit release. Check the release notes
+      for what is included in the published APK.
+    </p>
+    <noscript>
+      <p class="small">
+        Open the release page and download its APK under Assets.
+      </p>
+    </noscript>
+    <p class="small">
+      Install the APK, allow installation from your chosen browser or file
+      manager when Android asks, then grant Bolt root access in your root
+      manager.
+    </p>
+  </div>
+</section>
+<script>
+  import { fetchLatestRelease } from "../lib/releases.mjs";
+  const status = document.getElementById("release-status");
+  const links = document.getElementById("apk-links");
+  const page = document.getElementById("release-page");
+  const notice = document.getElementById("release-notice");
+  async function load() {
+    try {
+      const release = await fetchLatestRelease();
+      if (!(status && links && page)) return;
+      page.setAttribute("href", release.page);
+      status.textContent =
+        release.tag +
+        (release.assets.length
+          ? " · Latest stable release"
+          : " · No APK attached yet");
+      for (const asset of release.assets) {
+        const link = document.createElement("a");
+        link.className = "button primary apk-download";
+        link.href = asset.url;
+        const name = document.createElement("span");
+        name.textContent = "Download " + asset.name;
+        const size = document.createElement("span");
+        size.className = "apk-size";
+        size.textContent = (asset.size / 1048576).toFixed(1) + " MiB ↓";
+        link.append(name, size);
+        links.append(link);
+      }
+      if (release.assets.length) page.className = "text-link";
+      if (release.legacy && notice)
+        notice.textContent =
+          "The published 1.01.0 APK predates the Cockpit shown here. These screenshots preview the upcoming release; the download is the currently published version.";
+    } catch {
+      if (status)
+        status.textContent =
+          "Live release lookup is unavailable. The latest release page still works.";
+    }
+  }
+  // Defer the external request until download options are near the viewport.
+  const section = document.getElementById("download");
+  if (section && "IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          void load();
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(section);
+  } else void load();
+</script>

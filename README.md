@@ -8,17 +8,17 @@
 
 ## What's This?
 
-Bolt Kernel Flasher is a modern Android application designed to easily flash AnyKernel zips on supported devices. Built entirely with Kotlin, it leverages Material 3 Design and Jetpack Compose for a seamless and intuitive user experience.
+Bolt Kernel Flasher is an Android application for flashing compatible AnyKernel ZIPs on rooted devices. It uses Kotlin, Jetpack Compose and Material 3.
 
 ### Features
 
 - Copylefted application source (GPLv3.0); bundled runtime provenance documented below
-- 100% Kotlin
+- Kotlin and Jetpack Compose
 - Material 3 Design
 - Jetpack Compose UI
 - Reviewed kernel operations with automatic recovery snapshots and retained logs
 - Supports script-based AnyKernel ZIPs with the original installer
-- Pinned BusyBox runtime for ARM64, ARM32, x86 and x86-64 (current universal release APK: approximately 5 MiB)
+- Pinned BusyBox runtime for ARM64, ARM32, x86 and x86-64 (current source release build: approximately 5 MiB)
 - Verified manifest-based backups and restores for discovered supported partitions
 - Application-wide operation ownership, explicit partial outcomes and interrupted-job recovery
 - Cockpit overview, compact recovery bundles and a separate restart/health feedback record
@@ -38,20 +38,40 @@ See [operation and recovery behavior](docs/kernel-flashing.md),
 Appearance settings offer System, Light and Dark modes, AMOLED backgrounds, Android
 12+ dynamic colors, and Asgard or system fonts. See [appearance and font provenance](docs/appearance.md).
 
+### Download and website
+
+[Download the latest published APK](https://github.com/trinadhthatakula/Bolt/releases/latest).
+Bolt is distributed through GitHub; there is no Play Store listing.
+The landing page is prepared for **https://bolt.trinadhthatakula.com**;
+see [web setup and owner-managed hosting](web/README.md).
+
+**Release preview:** the screenshots and Cockpit features below describe current
+source. The published `Bolt_v1.01.0` APK (July 2025) predates this interface.
+Check release notes for the features included in a downloaded APK.
+
 ### Screenshots
 
-### [▶️ Watch Demo](https://youtube.com/shorts/21q9h6YFR3Y?feature=share)
+Actual app screens captured on a rooted emulator. Recovery bundles and provider
+logs use sample data; no kernel was flashed for these captures.
+See [screenshot provenance](docs/marketing/README.md).
+
 <table>
   <tr>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Screenshot 2" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" alt="Screenshot 3" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot 5" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot 6" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Screenshot 7" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Screenshot 8" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpg" alt="Screenshot 9" width="200"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/01-overview.png" alt="Bolt Cockpit overview with sample recovery bundle" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/02-install.png" alt="AnyKernel ZIP selection" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/03-recovery.png" alt="Compact six-partition sample recovery bundle" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/04-originals.png" alt="Original images in a sample recovery bundle" width="220"/></td>
+  </tr>
+  <tr>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/05-backup.png" alt="Manual backup selection" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/06-appearance-light.png" alt="Asgardian light appearance settings" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/07-appearance-amoled.png" alt="AMOLED appearance settings" width="220"/></td>
+    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/08-readable-log.png" alt="Readable sample kernel-provider log" width="220"/></td>
   </tr>
 </table>
+
+[Listing resources and local validation](fastlane/README.md) include the descriptions,
+icon, feature graphic and screenshots for the upcoming release.
 
 ### Warnings
 
