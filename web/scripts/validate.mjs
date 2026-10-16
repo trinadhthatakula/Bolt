@@ -22,6 +22,10 @@ for (const [file, route] of pages) {
     throw new Error("Invalid page structure: " + file);
   if ($("link[rel=canonical]").attr("href") !== origin + route)
     throw new Error("Invalid canonical: " + file);
+  if (
+    $('link[rel="describedby"][type="text/plain"]').attr("href") !== "/llms.txt"
+  )
+    throw new Error("Missing LLM documentation discovery: " + file);
   if (file !== "404.html" && $("meta[name=robots][content*=noindex]").length)
     throw new Error("Indexable page marked noindex");
   for (const el of $("img").toArray())
@@ -47,8 +51,72 @@ if (
 )
   throw new Error("Missing gallery or download fallback");
 const sitemap = await fs.readFile(path.join(dist, "sitemap.xml"), "utf8");
-if (!sitemap.includes(origin + "/privacy/"))
-  throw new Error("Incomplete sitemap");
+const xml = load(sitemap, { xmlMode: true });
+const expectedUrls = pages
+  .filter(([file]) => file !== "404.html")
+  .map(([, route]) => origin + route)
+  .sort();
+const sitemapUrls = xml("urlset > url > loc")
+  .map((_, el) => xml(el).text().trim())
+  .get()
+  .sort();
+if (
+  xml("urlset").length !== 1 ||
+  xml("urlset").attr("xmlns") !==
+    "http://www.sitemaps.org/schemas/sitemap/0.9" ||
+  JSON.stringify(sitemapUrls) !== JSON.stringify(expectedUrls)
+)
+  throw new Error("Invalid canonical sitemap URLs or namespace");
+
+const robots = (await fs.readFile(path.join(dist, "robots.txt"), "utf8"))
+  .split(/\r?\n/)
+  .map((line) => line.replace(/#.*/, "").trim())
+  .filter(Boolean);
+if (
+  !robots.some((line) => /^user-agent:\s*\*$/i.test(line)) ||
+  !robots.some((line) => /^allow:\s*\/$/i.test(line)) ||
+  robots.some((line) => /^disallow:\s*\S/i.test(line)) ||
+  robots.filter((line) => /^sitemap:/i.test(line)).length !== 1 ||
+  !robots.includes("Sitemap: " + origin + "/sitemap.xml")
+)
+  throw new Error("Invalid robots crawler policy or sitemap URL");
+
+for (const file of ["llms.txt", "llms-full.txt"]) {
+  const markdown = await fs.readFile(path.join(dist, file), "utf8");
+  if (
+    !markdown.startsWith("# Bolt") ||
+    (markdown.match(/^# /gm) || []).length !== 1 ||
+    !/^> \S/m.test(markdown) ||
+    /<!doctype html|<html[\s>]/i.test(markdown) ||
+    !markdown.includes(origin + "/")
+  )
+    throw new Error("Invalid Markdown documentation: " + file);
+  if (
+    file === "llms.txt" &&
+    !markdown.includes("(" + origin + "/llms-full.txt)")
+  )
+    throw new Error("LLM index does not link to full documentation");
+  for (const [, href] of markdown.matchAll(/\[[^\]]+\]\(([^\s)]+)\)/g)) {
+    const url = new URL(href, origin);
+    if (
+      url.protocol !== "https:" ||
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      (url.hostname.endsWith("trinadhthatakula.com") && url.origin !== origin)
+    )
+      throw new Error("Invalid documentation URL: " + href);
+    if (url.origin !== origin) continue;
+    if (url.search || url.hash)
+      throw new Error("Noncanonical documentation URL: " + href);
+    await fs.access(
+      path.join(
+        dist,
+        url.pathname,
+        url.pathname.endsWith("/") ? "index.html" : "",
+      ),
+    );
+  }
+}
 console.log(
-  "Production pages, local assets, metadata, schema and no-JS download fallback validated.",
+  "Production pages, assets, metadata, schema, download fallback, sitemap, robots and LLM documentation validated.",
 );

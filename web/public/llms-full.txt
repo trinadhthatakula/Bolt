@@ -1,0 +1,112 @@
+# Bolt — full context
+
+> Bolt is an open-source AnyKernel ZIP flasher for rooted Android devices. This standalone Markdown document covers the website's product information, current-source Cockpit preview, GitHub APK distribution and privacy policy.
+
+Website: https://bolt.trinadhthatakula.com/
+Documentation index: https://bolt.trinadhthatakula.com/llms.txt
+Source: https://github.com/trinadhthatakula/Bolt
+Maintainer: Trinadh Thatakula.
+Application source license: GPL-3.0. Bundled tools and fonts retain their own licenses.
+
+## Release status and downloads
+
+Bolt is distributed through [GitHub releases](https://github.com/trinadhthatakula/Bolt/releases/latest). There is no Play Store listing. The release page and its notes identify what is available in the published APK.
+
+The website and its screenshots describe an upcoming Cockpit release. At the time this document was prepared, the latest published release was Bolt_v1.01.0, published July 13, 2025. That APK predates the Cockpit interface and does not establish availability of the current-source features described below. This document is not a release changelog; check the latest release for current availability.
+
+The website resolves APK assets from GitHub's latest stable release when its download section approaches view. Debug, test and unsigned asset names are omitted. The release-page link remains available without JavaScript, if GitHub is unreachable or rate-limited, or if the release has no APK assets. Publishing a new release updates the live download choices without rebuilding the website.
+
+To install a published APK, download it from the release's Assets section, allow installation from the browser or file manager when Android asks, and grant Bolt root access through the device's root manager.
+
+## Requirements and supported workflows
+
+- Android 7.0 or newer (API 24+).
+- Working root access for privileged kernel, backup and restore operations.
+- An AnyKernel ZIP intended for the exact device and firmware.
+- A discovered boot, init_boot or recovery target before installing.
+- Adequate battery and storage; Bolt reviews these before privileged work.
+- Off-device backups and a working recovery method appropriate to the device.
+
+Current source supports script-based AnyKernel ZIPs with their original installer, plus manifest-based backup and restore. It does not implement raw boot-image flashing, KernelSU LKM installation/patching, KMI acquisition or inactive-slot OTA preparation.
+
+Kernel flashing can cause a bootloop or data loss. A compatible package remains responsible for its device checks and partition choices. Automatic snapshots cannot cover every change a script running as root may make.
+
+## Cockpit and installation flow
+
+Overview, Recovery and Activity remain available while installation and manual backup have dedicated screens.
+
+Overview shows device information, root status and the next operation. It uses the product's marketing name, such as POCO F7, when Android provides it, and falls back to brand/model information. This display name does not change the identifiers used to validate recovery manifests.
+
+The installation flow is: choose a compatible AnyKernel ZIP, review the device and recovery plan, then confirm installation. Receiving or sharing a ZIP does not start flashing. Bolt validates the package structure, digest, runtime and discovered targets, snapshots supported recovery images, then runs the original installer. It does not replace or patch the package's scripts or tools.
+
+An application-wide coordinator owns operations. Flashes, backups and restores cannot run concurrently within Bolt. Navigation or activity recreation does not cancel application-owned work. Process termination can still interrupt the app; interrupted durable records are treated as unknown and are not automatically replayed.
+
+## Recovery bundles, backup and restore
+
+Automatic snapshots appear as one compact card per bundle, for example "AutoRecovery · 6 partitions", with partition badges, creation time and the kernel ZIP when recorded. Opening a bundle reveals its original images for inspection and restore review.
+
+Examples include boot_a, init_boot_a, vendor_boot_a, dtbo_a, vbmeta_a and recovery_a. These are examples, not a promised inventory for every device. Bolt snapshots supported active-slot and shared targets it discovers. Available partitions and slot suffixes depend on the device.
+
+Manual backup lets the user choose a directory and images, then review the operation. Exports include a complete manifest after all image copies and digest checks succeed. Restore checks device/build identity, the live block target, capacity, slot, image size and SHA-256 before writes; it verifies each written target afterward and retains per-target outcomes.
+
+Restoring both slots requires a known A/B slot and both original slot images in the same manifest. Bolt does not clone an active-slot image onto the other slot. Legacy image folders without a complete manifest are inspectable but cannot be restored with the current workflow.
+
+A manifest checks integrity and device compatibility; it is not a signature from a trusted kernel developer. Other root tools do not participate in Bolt's operation lock. An installer can modify partitions or files outside the snapshot inventory, so automatic recovery is not a guaranteed rollback.
+
+Private snapshots remain on the device and are lost if Bolt's data is cleared or it is uninstalled. Keep additional copies outside the app and off the device.
+
+## Installer completion, restart and health
+
+Installer exit zero records installer completion. It does not prove the kernel can boot or that every kernel feature works.
+
+Bolt records the device and boot identity before installation and checks for a changed boot identity when it resumes after a completed installer. A detected restart is shown as "Device restarted" and the user can report whether the kernel is working. Installer completion, restart observation and health feedback are separate records. Old installs without a pre-flash identity can be confirmed explicitly by the user.
+
+Install details remain accessible from Activity after starting a new selection. Failures after execution begins may be partial and require review before new operations; acknowledging a result does not undo or verify a write.
+
+## Readable logs
+
+The default Readable log view decodes recovery ui_print commands into the kernel provider's intended messages. It preserves indentation and artwork, omits empty flush markers and keeps ordinary diagnostics visible. Formatting does not change installer execution or its exit status.
+
+Raw log and Export full raw log preserve the original output. Both saved logs and live output can be read in either mode. Current source retains up to 8 MiB per operation plus a final limit marker, a 32 KiB display tail and the most recent 20 operation logs. Export useful logs before enough new jobs evict them.
+
+## Appearance and typography
+
+Bolt adapts Thor's Asgardian palette and typography. Appearance settings offer System, Light and Dark modes; AMOLED backgrounds in dark mode; wallpaper-derived dynamic colors on Android 12+; and Asgard or system fonts.
+
+System theme and Asgard fonts are the defaults. AMOLED and dynamic colors are disabled by default. Outfit supplies headings and body text; Fira Code supplies technical text, partition identifiers and logs. Explicit variable-font weights preserve the intended outlines on custom Android skins. Android 7.0/7.1 uses system typography because Bolt's native variable-font loader requires API 26.
+
+The website has its own light/dark switch with locally stored preference. Website settings are independent of the app's settings.
+
+## Screenshots and preview provenance
+
+The eight-screen tour shows actual production UI captured on a rooted ARM64 API 37 emulator: Overview, Install, Recovery, original image choices, manual Backup, light Appearance, AMOLED Appearance and Readable log.
+
+The recovery bundle contains zero-filled sample files with valid manifests and nonexistent target paths. Provider output comes from a harmless sample log operation. No kernel installer, restore or reboot ran to create these screenshots. The captures do not demonstrate a physical-device flash or prove kernel compatibility or bootability.
+
+## Privacy
+
+Bolt's Android app has no advertising or analytics SDKs and does not request Android's internet permission. App-owned settings, operation records, logs and recovery snapshots are stored locally.
+
+Root access is used for privileged operations. Android's document picker grants access to ZIPs and backup/log destinations selected by the user. Foreground-service and wake-lock permissions support ongoing operations; notification permission allows operation notifications.
+
+Device identity and build information are recorded with recovery manifests for restore validation. Device-bound snapshots, journals and logs are excluded from Android cloud backup and device transfer. Clearing app data or uninstalling Bolt removes private records; exported files remain where the user saved them.
+
+Third-party kernel scripts run as root and can independently access files, modify the device or perform network operations. Bolt's lack of Android internet permission does not restrict those root scripts. Use packages from trusted developers.
+
+The static website has no analytics, advertising scripts or cookies. Its theme choice is stored under bolt-web-theme in browser local storage. Fonts and screenshots are hosted with the website.
+
+When the download section approaches view, the browser requests release information from GitHub's public API. GitHub receives normal request information such as the visitor's IP address. Download and source links also lead to GitHub. See [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+
+The hosting provider serves the website and may retain normal operational request logs. The project owner manages hosting and domain configuration.
+
+Exported logs can contain device information and installer messages. Review logs before sharing them in public issues. The authoritative website policy is at https://bolt.trinadhthatakula.com/privacy/.
+
+## Source documentation and support
+
+- [Operation and recovery contract](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/kernel-flashing.md).
+- [Cockpit and appearance](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/appearance.md).
+- [Tests and remaining hardware validation](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/testing.md).
+- [Bundled runtime provenance and licensing](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/runtime.md).
+- [Screenshot provenance](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/marketing/README.md).
+- [Issue tracker](https://github.com/trinadhthatakula/Bolt/issues).
+- [Latest published APK and release notes](https://github.com/trinadhthatakula/Bolt/releases/latest).

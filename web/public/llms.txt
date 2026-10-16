@@ -1,0 +1,29 @@
+# Bolt
+
+> Bolt is an open-source AnyKernel ZIP flasher for rooted Android devices. Its Cockpit brings installation, recovery bundles and readable installer logs together. APKs are distributed through GitHub releases.
+
+Website: https://bolt.trinadhthatakula.com/
+Maintainer: Trinadh Thatakula. Application source license: GPL-3.0.
+
+The website shows an upcoming Cockpit release preview, captured on an emulator with sample recovery files and provider logs. The published Bolt_v1.01.0 APK predates this interface. The latest-release page is the authority for currently downloadable APKs and their release notes.
+
+Android 7.0 or newer, working root access and a compatible AnyKernel ZIP are required. Installer completion, a detected restart and user-reported kernel health are separate observations. Automatic recovery snapshots do not guarantee rollback of every change an installer can make. Raw-image flashing and KernelSU LKM installation are future work.
+
+## Documentation
+
+- [Full Bolt context](https://bolt.trinadhthatakula.com/llms-full.txt): Standalone Markdown covering features, install and recovery flows, compatibility, appearance, release status and privacy.
+- [Operation and recovery guide](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/kernel-flashing.md): Original AnyKernel installer execution, operation outcomes, snapshots, logs and manifest-based restores in current source.
+- [Cockpit and appearance](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/appearance.md): Device names, recovery bundles, restart/health records and Asgardian theme/font settings.
+- [Privacy policy](https://bolt.trinadhthatakula.com/privacy/): Local app data, root installer access, website theme storage and GitHub requests.
+
+## Downloads and project
+
+- [Latest published release](https://github.com/trinadhthatakula/Bolt/releases/latest): Release notes and APK assets. No Play Store listing.
+- [Source repository](https://github.com/trinadhthatakula/Bolt): Current source and issue reporting.
+- [Landing page](https://bolt.trinadhthatakula.com/): Human-readable feature overview and eight-screen tour.
+
+## Optional
+
+- [Validation and remaining device checks](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/testing.md): Test evidence and hardware acceptance limits.
+- [Bundled runtime provenance](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/runtime.md): BusyBox provenance, separate license and release requirements.
+- [Screenshot provenance](https://raw.githubusercontent.com/trinadhthatakula/Bolt/master/docs/marketing/README.md): Actual emulator captures, sample fixtures and capture procedure.

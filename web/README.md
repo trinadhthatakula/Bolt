@@ -79,3 +79,25 @@ npm run check:metadata
 
 These two authoring commands need the full repository; they are deliberately not
 part of the isolated Vercel build. See [the capture and marketing handoff](../docs/marketing/README.md).
+
+## Crawlers and LLM documentation
+
+- `/robots.txt` allows crawling and advertises the production sitemap.
+- `/sitemap.xml` contains the canonical homepage and privacy page. The 404 page
+  and alternate text documentation are excluded.
+- `/llms.txt` is a concise Markdown index following the [llms.txt proposal](https://llmstxt.org/),
+  with a summary, release distinction and links to detailed documentation.
+- `/llms-full.txt` is a standalone expanded Markdown document covering product
+  behavior, the screen preview, downloads and privacy. It is linked from the index.
+- HTML pages advertise the index with `rel="describedby"`. The text files are
+  static assets served as `text/plain`; they need no JavaScript or GitHub token.
+
+`npm run build` checks the sitemap URLs, crawler policy, text files and their local
+links. After deployment, check that all four root URLs return HTTP 200 with XML or
+plain-text content types, rather than a fallback HTML page. LLM files provide
+context; they do not replace robots.txt or guarantee indexing or crawler adoption.
+
+Keep both LLM files consistent with the website and source docs when features,
+privacy or release availability change. Remove the preview distinction only when
+a corresponding Cockpit APK has been published; the latest-release page remains
+the authority for downloadable features.
