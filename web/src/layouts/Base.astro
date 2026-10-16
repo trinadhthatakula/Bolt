@@ -17,6 +17,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0e0e0e" />
     <link rel="canonical" href={canonical} />
+    <link rel="describedby" href="/llms.txt" type="text/plain" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
