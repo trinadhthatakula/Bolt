@@ -23,13 +23,15 @@ data class ThemePreferences(
 )
 
 /** Independent of device-bound recovery records; appearance applies immediately across routes. */
-class ThemePreferencesStore(context: Context) {
+class ThemePreferencesStore(context: Context) : java.io.Closeable {
     private val preferences = context.getSharedPreferences("appearance", Context.MODE_PRIVATE)
     private val mutable = MutableStateFlow(read())
     val state = mutable.asStateFlow()
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> mutable.value = read() }
 
     init { preferences.registerOnSharedPreferenceChangeListener(listener) }
+
+    override fun close() { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
 
     private fun read() = ThemePreferences(
         mode = runCatching { ThemeMode.valueOf(preferences.getString("theme_mode", "SYSTEM")!!) }.getOrDefault(ThemeMode.SYSTEM),

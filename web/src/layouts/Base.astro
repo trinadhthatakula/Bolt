@@ -1,0 +1,152 @@
+---
+import "../styles/global.css";
+const {
+  title = "Bolt — Your kernel cockpit",
+  description = "An open-source AnyKernel flasher for rooted Android. Explore Bolt’s upcoming Cockpit, recovery bundles and readable logs. Download the latest published APK from GitHub.",
+  noindex = false,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#0e0e0e" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="preload"
+      href="/fonts/outfit_variable.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta
+      property="og:image"
+      content="https://bolt.trinadhthatakula.com/social-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Bolt — Your kernel cockpit. AnyKernel, recovery and readable logs. Upcoming release preview."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem("bolt-web-theme");
+        if (theme === "light" || theme === "dark")
+          document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">
+      Skip to content
+    </a>
+    <header class="site-header wrap">
+      <a class="brand" href="/" aria-label="Bolt home">
+        <img src="/icon-192.png" width="36" height="36" alt="" /> Bolt
+        <span class="brand-label">KERNEL COCKPIT</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="/#tour">Explore</a>
+        <a href="https://github.com/trinadhthatakula/Bolt">
+          Source <span aria-hidden="true">↗</span>
+        </a>
+        <button
+          id="theme-toggle"
+          type="button"
+          hidden
+          aria-label="Switch website color theme"
+        >
+          Theme
+        </button>
+        <a class="nav-download" href="/#download">
+          Get Bolt <span aria-hidden="true">↓</span>
+        </a>
+      </nav>
+    </header>
+    <slot />
+    <footer class="site-footer wrap">
+      <div>
+        <a href="/" class="brand">
+          Bolt
+        </a>
+        <p>
+          Built by{" "}
+          <a href="https://github.com/trinadhthatakula">Trinadh Thatakula</a>.
+          <br />
+          Open source. GPL-3.0.
+        </p>
+      </div>
+      <div>
+        <span class="eyebrow">PROJECT</span>
+        <a href="https://github.com/trinadhthatakula/Bolt">GitHub</a>
+        <a href="https://github.com/trinadhthatakula/Bolt/issues">
+          Report an issue
+        </a>
+        <a href="/privacy/">Privacy</a>
+      </div>
+      <div>
+        <span class="eyebrow">FROM THE SAME MAKER</span>
+        <a href="https://thor.trinadhthatakula.com">
+          Thor <span aria-hidden="true">↗</span>
+        </a>
+        <a href="https://adhan.trinadhthatakula.com">
+          Adhan <span aria-hidden="true">↗</span>
+        </a>
+        <a href="https://batterywatch.trinadhthatakula.com">
+          BatteryWatch <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p class="footer-bottom">
+        Built for people who know their device. Keep a recovery route ready.
+      </p>
+    </footer>
+    <script>
+      const button = document.getElementById("theme-toggle");
+      function updateLabel() {
+        const dark = document.documentElement.dataset.theme
+          ? document.documentElement.dataset.theme === "dark"
+          : !matchMedia("(prefers-color-scheme: light)").matches;
+        if (button) {
+          button.textContent = dark ? "Light ◐" : "Dark ◑";
+          button.setAttribute(
+            "aria-label",
+            "Switch website to " + (dark ? "light" : "dark") + " theme",
+          );
+        }
+      }
+      if (button) {
+        button.hidden = false;
+        updateLabel();
+        button.addEventListener("click", () => {
+          const dark =
+            getComputedStyle(document.documentElement).colorScheme === "dark";
+          const theme = dark ? "light" : "dark";
+          document.documentElement.dataset.theme = theme;
+          try {
+            localStorage.setItem("bolt-web-theme", theme);
+          } catch {}
+          updateLabel();
+        });
+        matchMedia("(prefers-color-scheme: light)").addEventListener(
+          "change",
+          updateLabel,
+        );
+      }
+    </script>
+  </body>
+</html>

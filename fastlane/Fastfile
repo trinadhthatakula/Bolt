@@ -1,0 +1,20 @@
+# Local authoring/build lanes only. Bolt is distributed through GitHub releases.
+skip_docs
+default_platform(:android)
+
+platform :android do
+  desc "Run Android host tests and lint"
+  lane :test do
+    gradle(tasks: ["testDebugUnitTest", "lintDebug"], project_dir: ".")
+  end
+
+  desc "Assemble the minified release APK; signing and publication remain manual"
+  lane :build_release do
+    gradle(task: "assembleRelease", project_dir: ".")
+  end
+
+  desc "Validate local listing copy and image dimensions (run npm ci in web first)"
+  lane :validate_metadata do
+    sh("cd ../web && npm run check:metadata")
+  end
+end

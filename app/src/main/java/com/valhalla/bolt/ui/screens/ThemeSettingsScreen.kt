@@ -55,8 +55,9 @@ fun ThemeSettingsScreen(modifier: Modifier = Modifier, store: ThemePreferencesSt
             val fontStyles = typographyFor(preset)
             val technical = fontFamiliesFor(preset).technical
             val fontName = stringResource(if (preset == FontPreset.ASGARD) R.string.font_asgard else R.string.font_system)
+            val fontDescription = stringResource(R.string.font_option_description, fontName)
             OutlinedCard(onClick = { store.setFontPreset(preset) }, modifier = Modifier.fillMaxWidth().semantics {
-                contentDescription = "$fontName font"
+                contentDescription = fontDescription
                 selected = preferences.fontPreset == preset
                 role = Role.RadioButton
             }) {

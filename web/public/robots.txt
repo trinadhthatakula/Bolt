@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bolt.trinadhthatakula.com/sitemap.xml

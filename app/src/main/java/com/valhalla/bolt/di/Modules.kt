@@ -17,6 +17,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import org.koin.dsl.onClose
 
 val appModules = module {
     single<SharedPreferences> {
@@ -24,7 +25,7 @@ val appModules = module {
     }
     singleOf(::DocumentHandler)
     single { RootRuntime(androidContext()) }
-    single { ThemePreferencesStore(androidContext()) }
+    single { ThemePreferencesStore(androidContext()) } onClose { it?.close() }
     single { FlashJourneyStore(androidContext()) }
     single { OperationCoordinator(androidContext()) }
     viewModelOf(::FlasherViewModel)

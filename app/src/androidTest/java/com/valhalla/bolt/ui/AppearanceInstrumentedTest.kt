@@ -38,12 +38,30 @@ class AppearanceInstrumentedTest {
         compose.activityRule.scenario.recreate()
         compose.waitForIdle()
         assertEquals(ThemeMode.DARK, store.state.value.mode)
-        assertEquals(FontPreset.SYSTEM, ThemePreferencesStore(context).state.value.fontPreset)
-        assertTrue(ThemePreferencesStore(context).state.value.amoled)
-        assertTrue(ThemePreferencesStore(context).state.value.dynamicColors)
+        ThemePreferencesStore(context).use { reopened ->
+            assertEquals(FontPreset.SYSTEM, reopened.state.value.fontPreset)
+            assertTrue(reopened.state.value.amoled)
+            assertTrue(reopened.state.value.dynamicColors)
+        }
         compose.onNodeWithText("AMOLED mode").assertExists()
         compose.onNodeWithText("Dynamic colors").assertExists()
         compose.runOnIdle { store.setFontPreset(FontPreset.ASGARD); store.setMode(ThemeMode.SYSTEM); store.setAmoled(false); store.setDynamicColors(false) }
+    }
+
+    @Test fun disposedPreferenceStoresStopObservingChanges() {
+        val live = GlobalContext.get().get<ThemePreferencesStore>()
+        val closed = ThemePreferencesStore(context)
+        val original = live.state.value.mode
+        try {
+            val before = closed.state.value
+            closed.close()
+            compose.runOnIdle { live.setMode(if (original == ThemeMode.LIGHT) ThemeMode.DARK else ThemeMode.LIGHT) }
+            compose.waitUntil { live.state.value.mode != original }
+            assertEquals(before, closed.state.value)
+        } finally {
+            closed.close()
+            compose.runOnIdle { live.setMode(original) }
+        }
     }
 
     @Test fun allOutfitWeightsAndStylesLoadWithExplicitNativeWeights() {
