@@ -94,6 +94,15 @@ installer, restart the emulator or establish real post-flash kernel health.
   log view was not checked because the phone was locked and Xiaomi rejected USB input
   injection; no physical flash, restore or reboot was performed by this validation.
 
+- The user subsequently confirmed that operation logs are readable on the physical
+  device. This is user-reported UI acceptance.
+- Integrated merged Dependabot PR #24: AGP 9.5.0-alpha09 built-in Kotlin replaces the
+  external Android Kotlin plugin; compileSdk is 37 for the updated AndroidX libraries
+  (targetSdk 36 and minSdk 24 remain unchanged). JDK 21: Gradle help and build dry-run,
+  33 host tests, debug/test APKs, lint (0 errors, 42 warnings) and the minified unsigned
+  release passed. Fresh debug/test APKs passed all 22 instrumentation tests on
+  emulator-5584. Android Studio Rabbit 2 Canary 4 Gradle sync completed successfully. No physical partition writes or reboot were run.
+
 ## Pending before declaring device support or shipping a release
 
 - Real trusted AnyKernel packages on disposable, recoverable A/B and non-A/B devices:
