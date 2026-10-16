@@ -100,7 +100,7 @@ fun HomeScreen(modifier: Modifier = Modifier, incomingUri: Uri? = null, onImport
             }
         }
     }
-    if (logs) OperationLogSheet(logPath, logTail) { logs = false }
+    if (logs) OperationLogSheet(logPath, status?.takeIf { it.logPath == logPath }?.tail ?: logTail) { logs = false }
     if (acknowledge) AlertDialog(onDismissRequest = { acknowledge = false }, title = { Text("Review recovery state") },
         text = { Text("Inspect the retained log and original images, and check whether the installer is still running. Acknowledgment does not undo or verify partition changes; Bolt will not replay this operation.") },
         confirmButton = { TextButton(onClick = { acknowledge = false; operations.acknowledgeInterruption() }) { Text("I reviewed the recovery state") } },

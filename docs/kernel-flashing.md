@@ -31,7 +31,13 @@ app; the native child may continue. Acknowledgment never verifies or undoes a wr
 
 Logs retain up to 8 MiB per operation (plus the final limit marker), a 32 KiB UI tail,
 and the most recent 20 job logs. Export logs before starting enough new jobs to evict
-them. Recovery snapshots are never automatically deleted. Failed snapshots without a
+them. The default **Readable log** view decodes recovery `ui_print` commands into the
+kernel provider's messages, preserving indentation and artwork while omitting empty
+flush markers. Ordinary diagnostics remain visible. **Raw log** and **Export full raw
+log** retain the original output. Both existing saved logs and live output use the
+readable view; formatting does not change installer execution or its exit status.
+
+Recovery snapshots are never automatically deleted. Failed snapshots without a
 complete manifest cannot be restored. Users should keep additional off-device backups;
 device-bound snapshots/journals/logs are excluded from Android cloud backup and device transfer. Private snapshots are lost if Bolt's data is cleared or the app is uninstalled.
 

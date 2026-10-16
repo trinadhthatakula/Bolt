@@ -14,7 +14,7 @@ scripts/test-emulator.sh emulator-5584
 serials, installs only on the named emulator, and checks the instrumentation success
 message because `adb am instrument` can exit zero for failed assertions.
 
-Host coverage (29 tests including the existing example): real process nonzero exits,
+Host coverage (33 tests including the existing example): real process nonzero exits,
 single-process environment, shell quoting, stderr flooding, timeout and inherited
 pipe handling; bounded copies/hashes; AnyKernel structure, traversal, duplicate and
 symlink rejection; original installer preservation; independent original slot images;
@@ -22,9 +22,11 @@ all-source integrity validation; wrong device/unknown slot/missing partner/remap
 target rejection; first/second write failures and backup/manifest-commit failure before
 installer launch; same/changed boot identity, missing or wrong-device evidence,
 interrupted installation and independent health feedback; current-product marketing
-name priority, brand/model fallbacks and unavailable identity fields. Partition mutations use a fake backend.
+name priority, brand/model fallbacks and unavailable identity fields; `ui_print` message
+formatting, flush markers, preserved whitespace, ordinary diagnostics, CRLF and partial
+pipe reads. Partition mutations use a fake backend.
 
-Instrumentation coverage (21 tests including the existing example): pinned runtime
+Instrumentation coverage (22 tests including the existing example): pinned runtime
 hash/applets/execution, actual root UID, successful and failing harmless installer
 fixtures with original arguments/environment/bytes, standalone applets without the
 system PATH, native lock contention, read-only emulator partition backup, strict
@@ -35,7 +37,9 @@ review/new selection, exported alias dispatch and consumed restore confirmation 
 rejection; all 18 Outfit weight/style declarations and visibly heavier bold outlines;
 theme/font/AMOLED/dynamic-color persistence after recreation; one six-partition recovery
 bundle and its detail flow; simulated restart observation, saved feedback and reopening
-install details. Actual dark/light/AMOLED screen captures are generated in app-private
+install details; streamed provider text with a readable/raw log toggle and unchanged
+retained output. The harmless failing installer also emits recovery messages through
+its supplied output FD. Actual dark/light/AMOLED screen captures are generated in app-private
 `files/ui-validation`. The provider exists only in the test APK and uses no production bypass.
 
 The root fixtures only print, list their ZIP or sleep. The partition probe reads a
@@ -76,6 +80,19 @@ installer, restart the emulator or establish real post-flash kernel health.
   25053PC47G) and launched. The installed APK's SHA-256 matched the build, Bolt was
   resumed and the crash buffer was empty. The UI hierarchy confirmed **POCO F7** on
   Home and no raw model code. This validation ran no flash, restore or reboot action.
+
+## Results recorded on 2026-10-17
+
+- Readable operation logs: all 33 host tests and 22 emulator tests passed. Recovery
+  messages preserve artwork spacing, remove protocol/flush markers and retain ordinary
+  diagnostics. The UI updates an accumulated split message and switches between
+  readable and raw output. The harmless root installer prints through its supplied
+  output FD and still returns its original failing exit code.
+- Debug, instrumentation, lint (0 errors, 49 warnings) and minified release builds
+  passed. The new debug APK was installed on the POCO F7 and matched the built APK.
+  Its existing kernel-operation log remained byte-for-byte unchanged. The physical
+  log view was not checked because the phone was locked and Xiaomi rejected USB input
+  injection; no physical flash, restore or reboot was performed by this validation.
 
 ## Pending before declaring device support or shipping a release
 

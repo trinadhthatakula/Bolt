@@ -28,7 +28,7 @@ class RuntimeInstrumentedTest {
         val runtime = RootRuntime(context)
         val root = ArtifactFiles.workspace(File(context.cacheDir, "instrumentation-fixtures"))
         val zip = File(root, "fixture.zip")
-        val script = "#!/bin/sh\nprintf 'api=%s fd=%s\\n' \"\$1\" \"\$2\"\nprintf 'AKHOME=%s POSTINSTALL=%s\\n' \"\$AKHOME\" \"\$POSTINSTALL\"\necho diagnostic >&2\nexit 7\n"
+        val script = "#!/bin/sh\nprintf 'api=%s fd=%s\\n' \"\$1\" \"\$2\"\nprintf 'AKHOME=%s POSTINSTALL=%s\\n' \"\$AKHOME\" \"\$POSTINSTALL\"\nprintf 'ui_print   Provider message\\n      ui_print\\n' > /proc/self/fd/\"\$2\"\necho diagnostic >&2\nexit 7\n"
         ZipOutputStream(zip.outputStream()).use { output ->
             listOf("anykernel.sh" to "#!/bin/sh\n# fixture, no writes\n", ArtifactFiles.INSTALLER to script).forEach { (name, text) ->
                 output.putNextEntry(ZipEntry(name)); output.write(text.toByteArray()); output.closeEntry()
@@ -43,6 +43,9 @@ class RuntimeInstrumentedTest {
             assertTrue(streamed.contains("AKHOME=${File(root, "tmp").absolutePath}"))
             assertTrue(streamed.contains("POSTINSTALL=${root.absolutePath}"))
             assertTrue(streamed.contains("diagnostic"))
+            assertTrue(streamed.contains("ui_print   Provider message"))
+            assertTrue(readableOperationLog(streamed).contains("  Provider message\n"))
+            assertFalse(readableOperationLog(streamed).contains("      ui_print"))
             assertEquals(script, File(root, "update-binary").readText())
             assertFalse(File(root, "done").exists())
         } finally { Shell(true).execute("rm -rf -- ${shellQuote(root.absolutePath)}") }
