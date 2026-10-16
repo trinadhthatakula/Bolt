@@ -4,6 +4,10 @@ Bolt's Cockpit keeps Overview, Recovery and Activity available while installatio
 manual backup use dedicated screens. Choosing a ZIP or backup directory does not start
 an operation: installation, backup and restore each require their own review.
 
+Overview and install review use the current product's marketing name, such as **POCO F7**,
+when Android provides it. Devices without a marketing property use their brand and
+model. This display name does not change the identifiers used for recovery validation.
+
 Recovery shows one card per bundle, for example **AutoRecovery · 6 partitions**, with
 partition badges, its creation time and the associated kernel ZIP when recorded. Open
 the card to choose an original image and review a restore. Other partitions and manifest

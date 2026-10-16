@@ -14,14 +14,15 @@ scripts/test-emulator.sh emulator-5584
 serials, installs only on the named emulator, and checks the instrumentation success
 message because `adb am instrument` can exit zero for failed assertions.
 
-Host coverage (26 tests including the existing example): real process nonzero exits,
+Host coverage (29 tests including the existing example): real process nonzero exits,
 single-process environment, shell quoting, stderr flooding, timeout and inherited
 pipe handling; bounded copies/hashes; AnyKernel structure, traversal, duplicate and
 symlink rejection; original installer preservation; independent original slot images;
 all-source integrity validation; wrong device/unknown slot/missing partner/remapped
 target rejection; first/second write failures and backup/manifest-commit failure before
 installer launch; same/changed boot identity, missing or wrong-device evidence,
-interrupted installation and independent health feedback. Partition mutations use a fake backend.
+interrupted installation and independent health feedback; current-product marketing
+name priority, brand/model fallbacks and unavailable identity fields. Partition mutations use a fake backend.
 
 Instrumentation coverage (21 tests including the existing example): pinned runtime
 hash/applets/execution, actual root UID, successful and failing harmless installer
@@ -64,13 +65,17 @@ installer, restart the emulator or establish real post-flash kernel health.
 - The installed Espresso 3.6.1 test dependency failed against API 37's input APIs. Stable
   Espresso 3.7.0 and AndroidX JUnit 1.3.0 are now used for instrumentation; application
   runtime dependencies and the Android toolchain were not upgraded.
-- Cockpit/Asgard implementation: all 26 host tests and 21 emulator tests passed. Native
+- Cockpit/Asgard implementation: all 29 host tests and 21 emulator tests passed. Native
   Outfit weights 100–900, upright/italic aliases, emphasized typography and painted
   bold/regular differences were verified on API 37. Dark, light and AMOLED screenshots
   were inspected. This is emulator evidence; no new Xiaomi font-weight check occurred.
 - The user reported a successful physical-device BakaSU install and reboot using the
   preceding reliability implementation. This confirms that reported install, without
   substituting for broader hardware restore, font rendering or failure-mode acceptance.
+- The current Cockpit debug APK was installed on physical device `1da5425f` (onyx /
+  25053PC47G) and launched. The installed APK's SHA-256 matched the build, Bolt was
+  resumed and the crash buffer was empty. The UI hierarchy confirmed **POCO F7** on
+  Home and no raw model code. This validation ran no flash, restore or reboot action.
 
 ## Pending before declaring device support or shipping a release
 

@@ -1,7 +1,6 @@
 package com.valhalla.bolt.ui.screens
 
 import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -38,7 +37,7 @@ fun FlashScreen(modifier: Modifier = Modifier, viewModel: FlasherViewModel = koi
     state.reviewText?.let { review -> AlertDialog(onDismissRequest = viewModel::dismissReview, title = { Text("Review install") },
         text = { LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             item { Text(state.fileName, style = MaterialTheme.typography.titleMedium) }
-            item { Text("${Build.MODEL} · ${state.activeSlot?.let { "slot ${it.removePrefix("_").uppercase()}" } ?: "no slot suffix"}") }
+            item { Text("${state.deviceName} · ${state.activeSlot?.let { "slot ${it.removePrefix("_").uppercase()}" } ?: "no slot suffix"}") }
             item { Text("Archive, root, power and recovery space checked", style = MaterialTheme.typography.bodyMedium) }
             item { Text("AutoRecovery · ${state.recoveryTargets.size} partitions", style = MaterialTheme.typography.titleSmall); Spacer(Modifier.height(8.dp)); PartitionBadges(state.recoveryTargets) }
             item { Text("Your originals are saved before the installer starts. The saved bundle appears in Recovery.", style = MaterialTheme.typography.bodyMedium) }

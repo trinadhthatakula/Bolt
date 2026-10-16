@@ -36,6 +36,7 @@ data class FlashScreenUiState(
     val recoveryTargets: List<String> = emptyList(),
     val activeSlot: String? = null,
     val kernelRelease: String? = null,
+    val deviceName: String = DeviceDisplayName.fallback(android.os.Build.BRAND, android.os.Build.MANUFACTURER, android.os.Build.MODEL),
     val journey: FlashJourney? = null,
 )
 

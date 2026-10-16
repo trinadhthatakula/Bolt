@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.BatteryManager
+import android.os.Build
 import android.util.AtomicFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,6 +69,8 @@ class FlasherViewModel(
     }
     fun checkRootAvailability() {
         viewModelScope.launch(Dispatchers.IO) {
+            val deviceName = DeviceDisplayName.resolve(Shell(false), Build.BRAND, Build.MANUFACTURER, Build.MODEL)
+            mutable.update { it.copy(deviceName = deviceName) }
             val available = Shell.isRootAvailable()
             val kernel = if (available) shell.execute("uname -r").takeIf { it.isSuccess }?.output?.trim() else null
             val slot = if (available && !operations.isBlocked) runCatching { partitions.getActiveSlotSuffix() }.getOrNull() else null

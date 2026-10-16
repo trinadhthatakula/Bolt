@@ -1,7 +1,6 @@
 package com.valhalla.bolt.ui.screens
 
 import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -115,7 +114,7 @@ private fun CockpitOverview(flash: FlashScreenUiState, sessions: List<BackupSess
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(if (!flash.isRootCheckComplete) "Checking root" else if (flash.isRootAvailable) "Root ready" else "Root unavailable", style = MaterialTheme.typography.labelLarge)
-                    Text(Build.MODEL, style = MaterialTheme.typography.headlineMedium)
+                    Text(flash.deviceName, style = MaterialTheme.typography.headlineMedium)
                     Text(flash.kernelRelease ?: "Kernel details unavailable", style = MaterialTheme.typography.bodySmall, fontFamily = LocalTechnicalFontFamily.current)
                     flash.activeSlot?.let { Text("Current slot ${it.removePrefix("_").uppercase()}", style = MaterialTheme.typography.labelMedium) }
                 }
