@@ -25,6 +25,10 @@ data class FlashScreenUiState(
     val flashingState: FlashingState = FlashingState.IDLE,
     val pickedZipUri: Uri? = null,            // Original picked URI
     val copiedZipPath: String? = null,        // Local path after copying
+    val fileName: String = "",
+    val sha256: String = "",
+    val reviewText: String? = null,
+    val logPath: String? = null,
     val flashOutput: String = "",             // Console-like output
     val errorMessage: String? = null,         // Error message if any
     val flashedFiles: List<FlashedFile> = emptyList(), // History of flashed files,

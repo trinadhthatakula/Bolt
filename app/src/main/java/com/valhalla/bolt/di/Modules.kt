@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import com.valhalla.bolt.model.DocumentHandler
+import com.valhalla.bolt.model.OperationCoordinator
+import com.valhalla.bolt.model.RootRuntime
 import com.valhalla.bolt.viewModel.BackUpViewModel
 import com.valhalla.bolt.viewModel.FlasherViewModel
 import com.valhalla.bolt.viewModel.RestoreViewModel
@@ -19,6 +21,8 @@ val appModules = module {
         androidContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
     singleOf(::DocumentHandler)
+    single { RootRuntime(androidContext()) }
+    single { OperationCoordinator(androidContext()) }
     viewModelOf(::FlasherViewModel)
     viewModelOf(::BackUpViewModel)
     viewModelOf(::RestoreViewModel)

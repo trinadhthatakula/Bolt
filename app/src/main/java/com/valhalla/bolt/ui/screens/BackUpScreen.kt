@@ -49,6 +49,8 @@ import com.valhalla.bolt.model.Partition
 import com.valhalla.bolt.ui.theme.firaFontFamily
 import com.valhalla.bolt.viewModel.BackUpViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import com.valhalla.bolt.model.OperationCoordinator
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -57,6 +59,9 @@ fun BackUpScreen(
     viewModel: BackUpViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val operations: OperationCoordinator = koinInject()
+    val operation by operations.status.collectAsStateWithLifecycle()
+    val busy = operation?.running == true || operation?.uncertain == true
     var showLoggerDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -111,6 +116,7 @@ fun BackUpScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.titleMedium
                     )
+                    Button(enabled = !busy, onClick = viewModel::checkRootAvailability) { Text("Check root again") }
                     Text(
                         text = uiState.errorMessage ?: "This feature requires root.",
                         textAlign = TextAlign.Center,
@@ -122,6 +128,7 @@ fun BackUpScreen(
             else -> {
                 BackupRestoreContent(
                     uiState = uiState,
+                    busy = busy,
                     onStartBackup = { partitions ->
                         showLoggerDialog = true
                         viewModel.startBackup(partitions)
@@ -154,10 +161,12 @@ fun BackUpScreen(
 @Composable
 fun BackupRestoreContent(
     uiState: BackupUiState,
+    busy: Boolean = false,
     onStartBackup: (List<Partition>) -> Unit,
     onSaveNewLocationAndBackup: (List<Partition>, Uri) -> Unit
 ) {
     var selectedPartitions by remember { mutableStateOf<List<Partition>>(emptyList()) }
+    var locationError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val contentResolver = context.contentResolver
@@ -168,11 +177,11 @@ fun BackupRestoreContent(
             if (uri != null) {
                 val flags =
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                contentResolver.takePersistableUriPermission(uri, flags)
-                if (selectedPartitions.isNotEmpty()) {
-                    onSaveNewLocationAndBackup(selectedPartitions.toList(), uri)
-
-                }
+                try {
+                    contentResolver.takePersistableUriPermission(uri, flags)
+                    locationError = null
+                    if (selectedPartitions.isNotEmpty()) onSaveNewLocationAndBackup(selectedPartitions.toList(), uri)
+                } catch (e: SecurityException) { locationError = "Cannot retain access to this directory. Choose another location." }
             }
         }
     )
@@ -180,7 +189,8 @@ fun BackupRestoreContent(
     var otherPartitionsExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-
+        (locationError ?: uiState.errorMessage)?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        if (uiState.backupRestoreState == BackupRestoreState.SUCCESS) Text("Backup completed and verified")
         uiState.activeSlotSuffix?.let { slot ->
             Text(
                 text = "A/B Partition Scheme Detected (Active slot: $slot)",
@@ -251,7 +261,7 @@ fun BackupRestoreContent(
                     backupLocationLauncher.launch(null)
                 }
             },
-            enabled = selectedPartitions.isNotEmpty() && uiState.backupRestoreState == BackupRestoreState.IDLE,
+            enabled = !busy && uiState.isRootAvailable && selectedPartitions.isNotEmpty() && uiState.backupRestoreState in setOf(BackupRestoreState.IDLE, BackupRestoreState.SUCCESS, BackupRestoreState.ERROR),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Backup Selected (${selectedPartitions.size}) Partitions")

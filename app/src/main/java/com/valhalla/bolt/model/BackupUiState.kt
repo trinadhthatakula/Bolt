@@ -3,7 +3,7 @@ package com.valhalla.bolt.model
 import android.net.Uri
 import java.io.File
 
-data class Partition(val name: String)
+data class Partition(val name: String, val path: String = "", val sizeBytes: Long = 0)
 
 data class CategorizedPartitions(
     val recommended: List<Partition>,
@@ -13,7 +13,10 @@ data class CategorizedPartitions(
 data class BackupFile(
     val uri: Uri,
     val fileName: String,
-    val partitionName: String
+    val partitionName: String,
+    val manifest: RecoveryManifest? = null,
+    val sessionImages: Map<String, Uri> = emptyMap(),
+    val validationError: String? = null
 )
 
 enum class BackupRestoreState {

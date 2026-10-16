@@ -48,6 +48,10 @@ android {
         buildConfig = true
         compose = true
     }
+    packaging {
+        jniLibs.useLegacyPackaging = true
+        jniLibs.keepDebugSymbols += "**/libbolt_busybox.so"
+    }
 }
 
 dependencies {

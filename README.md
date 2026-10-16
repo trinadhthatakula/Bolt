@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/launcher-playstore.png" alt="Thor Logo" height="192dp">
+  <img src="app/src/main/launcher-playstore.png" alt="Bolt Logo" height="192dp">
 </p>
 
 <h1 align="center">Bolt Kernel Flasher</h1>
@@ -12,14 +12,26 @@ Bolt Kernel Flasher is a modern Android application designed to easily flash Any
 
 ### Features
 
-- Fully reproducible, copylefted libre software (GPLv3.0)
+- Copylefted application source (GPLv3.0); bundled runtime provenance documented below
 - 100% Kotlin
 - Material 3 Design
 - Jetpack Compose UI
-- Simple and fast kernel flashing
-- Supports AnyKernel zips
-- Smallest APK size possible (around 1.0 MB)
-- Backup and Restore any Partition*
+- Reviewed kernel operations with automatic recovery snapshots and retained logs
+- Supports script-based AnyKernel ZIPs with the original installer
+- Pinned BusyBox runtime for ARM64, ARM32, x86 and x86-64 (current universal release APK: approximately 5 MiB)
+- Verified manifest-based backups and restores for discovered supported partitions
+- Application-wide operation ownership, explicit partial outcomes and interrupted-job recovery
+
+### Flashing, backup and recovery
+
+Root is required for privileged work. Imported/shared ZIPs require a separate review;
+Bolt does not execute them automatically. Pre-flash snapshots cover discovered active
+and shared kernel recovery targets, and cannot guarantee rollback of every change an
+installer may make. Legacy backups without a complete manifest cannot be restored.
+
+See [operation and recovery behavior](docs/kernel-flashing.md),
+[runtime provenance and release requirements](docs/runtime.md), and
+[tests and pending device validation](docs/testing.md).
 
 ### Screenshots
 
