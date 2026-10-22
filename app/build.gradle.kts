@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -14,6 +15,23 @@ kotlin {
     }
 }
 
+val keystorePropertiesFile = rootProject.file("jks.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.isFile) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
+}
+val hasLocalSigningCredentials =
+    listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all { key ->
+        val value = keystoreProperties.getProperty(key)
+        !value.isNullOrBlank() && !value.startsWith("REPLACE_WITH_")
+    }
+val hasEnvironmentSigningCredentials =
+    listOf("KEY_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD").all { name ->
+        !providers.environmentVariable(name).orNull.isNullOrBlank()
+    }
+val hasSigningCredentials = hasLocalSigningCredentials || hasEnvironmentSigningCredentials
+
 android {
     namespace = "com.valhalla.bolt"
     compileSdk = 37
@@ -28,6 +46,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasLocalSigningCredentials) {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            } else if (hasEnvironmentSigningCredentials) {
+                keyAlias = providers.environmentVariable("KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("KEY_PASSWORD").get()
+                storePassword = providers.environmentVariable("KEYSTORE_PASSWORD").get()
+                storeFile = file(
+                    providers.environmentVariable("KEYSTORE_FILE_PATH").getOrElse("release.jks")
+                )
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -36,6 +72,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // An empty signing config breaks release builds on machines without credentials.
+            signingConfig = signingConfigs.getByName("release").takeIf { hasSigningCredentials }
+            if (!hasSigningCredentials) {
+                logger.lifecycle(
+                    "Release signing is not configured; fill in jks.properties or signing environment variables. " +
+                        "Release artifacts will be unsigned."
+                )
+            }
         }
     }
     compileOptions {

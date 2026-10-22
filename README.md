@@ -73,6 +73,31 @@ See [screenshot provenance](docs/marketing/README.md).
 [Listing resources and local validation](fastlane/README.md) include the descriptions,
 icon, feature graphic and screenshots for the upcoming release.
 
+### Signed release builds
+
+Bolt uses the same signing setup as Thor. Copy `jks.properties.example` to
+`jks.properties` in the repository root and replace all four placeholders with your
+keystore path, store password, key alias and key password. Use an absolute keystore
+path; relative paths resolve from `app/`. Java properties require literal backslashes
+to be escaped as `\\` (forward slashes also work in paths).
+
+```sh
+cp jks.properties.example jks.properties
+# Fill in jks.properties with your keystore details before building.
+./gradlew :app:assembleRelease :app:bundleRelease
+```
+
+Signed APKs are written to `app/build/outputs/apk/release/`; signed app bundles go to
+`app/build/outputs/bundle/release/`. Local `jks.properties`, `*.jks` and `*.keystore`
+files are ignored by Git; only the placeholder template is tracked.
+
+For CI, set Thor's `KEY_ALIAS`, `KEY_PASSWORD`, `KEYSTORE_PASSWORD` and
+`KEYSTORE_FILE_PATH` environment variables instead. The path defaults to
+`app/release.jks` when omitted. Complete local credentials take precedence over the
+environment. Missing, incomplete or unchanged local placeholders leave release
+artifacts unsigned unless all required environment credentials are available.
+Debug builds keep Android's normal debug signing.
+
 ### Warnings
 
 - **Use at your own risk.** Flashing kernels can potentially brick your device.

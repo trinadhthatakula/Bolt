@@ -15,3 +15,10 @@
 local.properties
 
 .kotlin/
+
+# Local release signing credentials and keystores
+/jks.properties
+*.jks
+*.keystore
+*.p12
+*.pfx

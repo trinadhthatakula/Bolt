@@ -1,0 +1,6 @@
+# Copy to jks.properties in the repository root and replace every placeholder.
+# Absolute paths are recommended; relative paths resolve from app/ (as in Thor).
+storeFile=REPLACE_WITH_KEYSTORE_FILE_PATH
+storePassword=REPLACE_WITH_KEYSTORE_PASSWORD
+keyAlias=REPLACE_WITH_KEY_ALIAS
+keyPassword=REPLACE_WITH_KEY_PASSWORD
