@@ -13,7 +13,7 @@ const faqs = [
   ],
   [
     "Does a successful install mean the kernel will boot?",
-    "Installer completion, a detected device restart and your health feedback are separate records in the upcoming Cockpit. A zero exit code alone cannot prove bootability or kernel health.",
+    "Installer completion, a detected device restart and your health feedback are separate records in the Cockpit. A zero exit code alone cannot prove bootability or kernel health.",
   ],
   [
     "Can Bolt flash raw images or install KernelSU LKM?",
@@ -24,8 +24,8 @@ const faqs = [
     "Bolt is distributed through GitHub releases. Download an APK from the latest release and install it on your device. There is no Play Store listing.",
   ],
   [
-    "Why does the downloaded app look different?",
-    "The current published release is older than the Cockpit preview shown on this page. The download always follows GitHub’s latest stable release. Read its release notes to see which features are included.",
+    "Which version includes the Cockpit?",
+    "Bolt 1.02.0 and newer include the Cockpit shown here. The download follows GitHub’s latest stable release. Read its release notes to see which features are included.",
   ],
 ];
 const schema = {
@@ -38,7 +38,7 @@ const schema = {
   downloadUrl: "https://github.com/trinadhthatakula/Bolt/releases/latest",
   license: "https://www.gnu.org/licenses/gpl-3.0.html",
   description:
-    "Open-source AnyKernel ZIP flasher for rooted Android. Screenshots preview the upcoming Cockpit release.",
+    "Open-source AnyKernel ZIP flasher for rooted Android with a Cockpit, recovery bundles and readable installer logs.",
   screenshot: screenshots.map(
     (s) => "https://bolt.trinadhthatakula.com/screenshots/" + s.name + ".webp",
   ),
@@ -69,7 +69,7 @@ const schema = {
             Take a look <span aria-hidden="true">↘</span>
           </a>
         </div>
-        <p class="hero-note">Cockpit preview · Root required · Android 7.0+</p>
+        <p class="hero-note">Cockpit · Root required · Android 7.0+</p>
       </div>
       <figure class="hero-device">
         <div class="phone-frame">
@@ -97,7 +97,7 @@ const schema = {
 
     <section class="intro-section" id="features">
       <div class="section-heading">
-        <span class="eyebrow">MEET THE UPCOMING COCKPIT</span>
+        <span class="eyebrow">MEET THE COCKPIT</span>
         <h2>
           Less hunting.
           <br />
@@ -188,9 +188,8 @@ Your provider’s messages, here.</pre>
         </p>
       </div>
       <p class="preview-notice">
-        Upcoming release preview. Captured on a rooted emulator with a sample
-        recovery bundle and sample log. No kernel was flashed for these
-        screenshots.
+        Captured on a rooted emulator with a sample recovery bundle and sample
+        log. No kernel was flashed for these screenshots.
       </p>
       <div class="screenshot-gallery">
         {screenshots.map((s, i) => (

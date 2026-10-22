@@ -29,8 +29,8 @@ import { RELEASES_URL } from "../lib/releases.mjs";
       View latest release <span aria-hidden="true">↗</span>
     </a>
     <p class="small" id="release-notice">
-      Screenshots preview the upcoming Cockpit release. Check the release notes
-      for what is included in the published APK.
+      The Cockpit ships in Bolt 1.02.0 and newer. Check the release notes for
+      what is included in the published APK.
     </p>
     <noscript>
       <p class="small">
@@ -75,7 +75,7 @@ import { RELEASES_URL } from "../lib/releases.mjs";
       if (release.assets.length) page.className = "text-link";
       if (release.legacy && notice)
         notice.textContent =
-          "The published 1.01.0 APK predates the Cockpit shown here. These screenshots preview the upcoming release; the download is the currently published version.";
+          "The historic 1.01.0 APK predates the Cockpit shown here. Bolt 1.02.0 and newer include this interface; check GitHub for the latest release.";
     } catch {
       if (status)
         status.textContent =

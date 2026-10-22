@@ -1,6 +1,6 @@
 # Bolt — full context
 
-> Bolt is an open-source AnyKernel ZIP flasher for rooted Android devices. This standalone Markdown document covers the website's product information, current-source Cockpit preview, GitHub APK distribution and privacy policy.
+> Bolt is an open-source AnyKernel ZIP flasher for rooted Android devices. This standalone Markdown document covers the website's product information, Cockpit interface, GitHub APK distribution and privacy policy.
 
 Website: https://bolt.trinadhthatakula.com/
 Documentation index: https://bolt.trinadhthatakula.com/llms.txt
@@ -12,7 +12,7 @@ Application source license: GPL-3.0. Bundled tools and fonts retain their own li
 
 Bolt is distributed through [GitHub releases](https://github.com/trinadhthatakula/Bolt/releases/latest). There is no Play Store listing. The release page and its notes identify what is available in the published APK.
 
-The website and its screenshots describe an upcoming Cockpit release. At the time this document was prepared, the latest published release was Bolt_v1.01.0, published July 13, 2025. That APK predates the Cockpit interface and does not establish availability of the current-source features described below. This document is not a release changelog; check the latest release for current availability.
+The Cockpit interface and features described here ship in [Bolt 1.02.0](https://github.com/trinadhthatakula/Bolt/releases/tag/Bolt_v1.02.0) and newer. That release includes a signed universal APK, changelog, runtime binaries, verified corresponding BusyBox source/build inputs and asset checksums. The historic Bolt_v1.01.0 APK predates this interface. This document is not a release changelog; check the latest release for current availability.
 
 The website resolves APK assets from GitHub's latest stable release when its download section approaches view. Debug, test and unsigned asset names are omitted. The release-page link remains available without JavaScript, if GitHub is unreachable or rate-limited, or if the release has no APK assets. Publishing a new release updates the live download choices without rebuilding the website.
 
@@ -77,7 +77,7 @@ System theme and Asgard fonts are the defaults. AMOLED and dynamic colors are di
 
 The website has its own light/dark switch with locally stored preference. Website settings are independent of the app's settings.
 
-## Screenshots and preview provenance
+## Screenshot provenance
 
 The eight-screen tour shows actual production UI captured on a rooted ARM64 API 37 emulator: Overview, Install, Recovery, original image choices, manual Backup, light Appearance, AMOLED Appearance and Readable log.
 

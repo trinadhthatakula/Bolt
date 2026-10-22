@@ -42,11 +42,12 @@ Appearance settings offer System, Light and Dark modes, AMOLED backgrounds, Andr
 
 [Download the latest published APK](https://github.com/trinadhthatakula/Bolt/releases/latest).
 Bolt is distributed through GitHub; there is no Play Store listing.
-The landing page is prepared for **https://bolt.trinadhthatakula.com**;
+The landing page is live at **https://bolt.trinadhthatakula.com**;
 see [web setup and owner-managed hosting](web/README.md).
 
-**Release preview:** the screenshots and Cockpit features below describe current
-source. The published `Bolt_v1.01.0` APK (July 2025) predates this interface.
+**Bolt 1.02.0:** the Cockpit is available in the
+[signed release](https://github.com/trinadhthatakula/Bolt/releases/tag/Bolt_v1.02.0),
+with changelogs and verified corresponding BusyBox source/build inputs.
 Check release notes for the features included in a downloaded APK.
 
 ### Screenshots
@@ -71,7 +72,7 @@ See [screenshot provenance](docs/marketing/README.md).
 </table>
 
 [Listing resources and local validation](fastlane/README.md) include the descriptions,
-icon, feature graphic and screenshots for the upcoming release.
+icon, feature graphic and screenshots for Bolt 1.02.0.
 
 ### Signed release builds
 

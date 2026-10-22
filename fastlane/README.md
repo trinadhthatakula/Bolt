@@ -23,6 +23,5 @@ URL, 512×512 icon, 1024×500 feature graphic and eight 1080×1920 phone screens
 The capture provenance and regeneration commands are documented in
 [the marketing handoff](../docs/marketing/README.md).
 
-The listing and [upcoming release notes](RELEASE_NOTES.md) describe the current
-Cockpit source. The published 1.01.0 APK predates it; do not assign these notes to
-that historic release. No Android version was changed for this work.
+The listing and [release notes](RELEASE_NOTES.md) describe the Cockpit shipped in
+Bolt 1.02.0. The historic 1.01.0 APK predates this interface.

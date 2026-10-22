@@ -1,9 +1,10 @@
 # Bolt marketing handoff
 
-The landing page, listing copy and README showcase the current Cockpit. The latest
-published APK at authoring time is `Bolt_v1.01.0` (July 13, 2025), so all three
-surfaces identify the UI as an upcoming release preview. No Android version change,
-release publication, Cloudflare change or Vercel deployment is included.
+The landing page, listing copy and README showcase the Cockpit shipped in
+[Bolt 1.02.0](https://github.com/trinadhthatakula/Bolt/releases/tag/Bolt_v1.02.0).
+The release includes a signed APK and verified corresponding BusyBox source/build
+inputs. Screenshot provenance below remains unchanged. The owner manages Cloudflare
+and Vercel configuration.
 
 ## Screenshot provenance
 
@@ -65,18 +66,19 @@ the captures and clearly labeled sample operation log remain in emulator app dat
 - The owner configures `bolt.trinadhthatakula.com` and its Cloudflare CNAME.
 - The page resolves latest stable GitHub APKs dynamically and retains a no-JS release
   link. No release token, backend or rebuild is needed when a new APK is published.
-- Publish a signed Cockpit APK only after the remaining runtime-source/publication
-  and hardware acceptance checks in [runtime.md](../runtime.md) and
-  [testing.md](../testing.md). This branch does not claim those checks passed.
-- After that release, remove the “upcoming preview” notices consistently from website,
-  README and listing copy. Keep screenshot fixture provenance explicit.
+- Bolt 1.02.0 is published with a signed APK, changelog, checksums and verified
+  runtime/source archives. See [runtime.md](../runtime.md) for reproducibility and
+  [testing.md](../testing.md) for completed checks and remaining hardware validation.
+- Website, README and listing copy reflect the shipped release. Keep screenshot
+  fixture provenance explicit when updating them.
 
 ## PR #23 review follow-ups
 
 Verified against merged master: historic log tail loading, Fira Code native 400/500
 weights and portable grep were already fixed in `9510dbc` before the squash merge.
-The upcoming PR adds the remaining two valid nitpicks: localized font-option semantics,
-and explicit appearance listener cleanup for temporary stores and Koin disposal.
+The merged marketing follow-up added the remaining two valid nitpicks: localized
+font-option semantics and explicit appearance listener cleanup for temporary stores
+and Koin disposal.
 
 ## Validation
 

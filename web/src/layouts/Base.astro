@@ -2,7 +2,7 @@
 import "../styles/global.css";
 const {
   title = "Bolt — Your kernel cockpit",
-  description = "An open-source AnyKernel flasher for rooted Android. Explore Bolt’s upcoming Cockpit, recovery bundles and readable logs. Download the latest published APK from GitHub.",
+  description = "An open-source AnyKernel flasher for rooted Android. Explore Bolt’s Cockpit, recovery bundles and readable logs. Download the latest signed APK from GitHub.",
   noindex = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -40,7 +40,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Bolt — Your kernel cockpit. AnyKernel, recovery and readable logs. Upcoming release preview."
+      content="Bolt — Your kernel cockpit. AnyKernel, recovery and readable logs."
     />
     <meta name="twitter:card" content="summary_large_image" />
     <title>{title}</title>

@@ -1,4 +1,4 @@
-This listing previews Bolt’s upcoming Cockpit release. The currently published GitHub APK may predate the interface and features shown here. Check its release notes before downloading.
+The Cockpit interface and features shown here ship in Bolt 1.02.0 and newer. Download the latest signed APK from GitHub and check its release notes.
 
 Bolt is an open-source kernel flasher for rooted Android devices. Choose a compatible script-based AnyKernel ZIP, review the device and recovery plan, and run the package’s original installer. Receiving or sharing a ZIP never starts flashing automatically.
 

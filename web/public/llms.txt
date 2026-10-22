@@ -5,7 +5,7 @@
 Website: https://bolt.trinadhthatakula.com/
 Maintainer: Trinadh Thatakula. Application source license: GPL-3.0.
 
-The website shows an upcoming Cockpit release preview, captured on an emulator with sample recovery files and provider logs. The published Bolt_v1.01.0 APK predates this interface. The latest-release page is the authority for currently downloadable APKs and their release notes.
+The Cockpit ships in Bolt 1.02.0 and newer. Website screenshots were captured on an emulator with sample recovery files and provider logs. The latest-release page is the authority for currently downloadable APKs and their release notes; Bolt 1.02.0 also includes verified corresponding BusyBox source and build inputs.
 
 Android 7.0 or newer, working root access and a compatible AnyKernel ZIP are required. Installer completion, a detected restart and user-reported kernel health are separate observations. Automatic recovery snapshots do not guarantee rollback of every change an installer can make. Raw-image flashing and KernelSU LKM installation are future work.
 

@@ -47,12 +47,10 @@ The `/releases/latest` link is present in static HTML and remains usable without
 JavaScript, on network errors, API rate limits, or if a release has no APK assets.
 In the last case users see the release page rather than a guessed download URL.
 
-The published `Bolt_v1.01.0` APK predates the Cockpit screenshots. The site makes
-this distinction in its hero, gallery, download section and FAQ; it displays an
-additional notice when that old release is returned. The showcase is explicitly
-an upcoming release preview. Update preview wording after the owner publishes a
-corresponding signed Android release; do not silently claim that old APK has the
-new interface. This work does not bump an Android version or publish a release.
+The Cockpit shown on the site ships in `Bolt_v1.02.0` and newer. The historic
+`Bolt_v1.01.0` APK predates it; the download section retains an additional notice
+if that old release is returned. Screenshot captions retain their emulator and
+sample-data provenance. Release notes remain the authority for included features.
 
 ## Assets and appearance
 
@@ -88,7 +86,7 @@ part of the isolated Vercel build. See [the capture and marketing handoff](../do
 - `/llms.txt` is a concise Markdown index following the [llms.txt proposal](https://llmstxt.org/),
   with a summary, release distinction and links to detailed documentation.
 - `/llms-full.txt` is a standalone expanded Markdown document covering product
-  behavior, the screen preview, downloads and privacy. It is linked from the index.
+  behavior, the screen tour, downloads and privacy. It is linked from the index.
 - HTML pages advertise the index with `rel="describedby"`. The text files are
   static assets served as `text/plain`; they need no JavaScript or GitHub token.
 
@@ -98,6 +96,5 @@ plain-text content types, rather than a fallback HTML page. LLM files provide
 context; they do not replace robots.txt or guarantee indexing or crawler adoption.
 
 Keep both LLM files consistent with the website and source docs when features,
-privacy or release availability change. Remove the preview distinction only when
-a corresponding Cockpit APK has been published; the latest-release page remains
-the authority for downloadable features.
+privacy or release availability change. The latest-release page remains the
+authority for downloadable features.

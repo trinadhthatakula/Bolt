@@ -166,7 +166,7 @@ async function artwork(width, height, output) {
       },
       {
         input: await textImage(
-          "Upcoming release preview · bolt.trinadhthatakula.com",
+          "Bolt Cockpit · bolt.trinadhthatakula.com",
           s(16),
           "#ababab",
           400,
