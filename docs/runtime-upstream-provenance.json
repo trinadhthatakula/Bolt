@@ -1,0 +1,22 @@
+{
+  "source": "https://github.com/topjohnwu/Magisk",
+  "tag": "v30.7",
+  "commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
+  "apkUrl": "https://github.com/topjohnwu/Magisk/releases/download/v30.7/Magisk-v30.7.apk",
+  "apkSha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+  "binarySha256": {
+    "arm64-v8a": "4d60ab3f5a59ebb2ca863f2f514e6924401b581e9b64f602665c008177626651",
+    "armeabi-v7a": "7edf6024ed2305dc7bc5d91bad6a8f0ebffbecdd41b8a861d0ced297a5ea1b6d",
+    "x86": "52def0088cd6e55a6fec699e92c5952b4539f7fb68d7be847d8a82003ed21b7b",
+    "x86_64": "060844b0769f7a50262854af027c4d6076a212d160a51309b53057cfb7122900"
+  },
+  "version": "1.36.1.1 topjohnwu",
+  "binaryUrl": "https://github.com/topjohnwu/magisk-files/releases/download/files/busybox-1.36.1.1.zip",
+  "archiveSha256": "b4d0551feabaf314e53c79316c980e8f66432e9fb91a69dbbf10a93564b40951",
+  "busyboxSource": "https://github.com/topjohnwu/ndk-busybox",
+  "sourceBranch": "android-ndk-1.36.1",
+  "sourceCommit": "1c0ca97aafb9698ab7770ce1f67af1a84b469cdb",
+  "license": "GPL-2.0-only",
+  "historicalReferenceOnly": true,
+  "sourceCorrespondenceVerified": false
+}

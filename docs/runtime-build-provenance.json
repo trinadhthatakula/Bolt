@@ -1,0 +1,68 @@
+{
+  "version": "1.36.1.1 topjohnwu (Bolt source build)",
+  "upstreamBusyBox": {
+    "url": "https://busybox.net/downloads/busybox-1.36.1.tar.bz2",
+    "sha256": "b8cc24c9574d809e7279c3be349795c5d5ceb6fdf19ca709f80cde50e47de314",
+    "gitTag": "1_36_1",
+    "gitCommit": "1a64f6a20aaf6ea4dbba68bbfa8cc1ab7e5c57c4"
+  },
+  "kitchen": {
+    "url": "https://github.com/topjohnwu/ndk-box-kitchen",
+    "commit": "14d189ea3070a8167b3576bf83fe070d4a3441af",
+    "patchesApplied": 18
+  },
+  "selinux": {
+    "url": "https://android.googlesource.com/platform/external/selinux",
+    "commit": "8d5c7f06d074449dbb3dad7fcb531ec02ff0c0d1",
+    "archiveSHA256": "e2941e849469a595bfdd6c49f9c9c4e5b633adebbea761d757c132e6348f5871"
+  },
+  "pcre": {
+    "url": "https://android.googlesource.com/platform/external/pcre",
+    "commit": "8a8f7153df8d9582b9ce930eb9beacef4840a19e",
+    "archiveSHA256": "c9854fb69a40653840744acbd7915ce5ce23c320ed1916b631901641d00cb8cc"
+  },
+  "ndk": {
+    "revision": "30.0.14904198-beta1",
+    "release": "r30-beta1",
+    "compiler": "Android clang 21.0.0 (14475230, r574158, 9f872551d3c681d06fd303b36f16ed5c274735eb)",
+    "downloads": [
+      {
+        "hostOS": "linux",
+        "url": "https://dl.google.com/android/repository/android-ndk-r30-beta1-linux.zip",
+        "checksum": "26b746e5a1e7ac3371f2a862a2f52a7c0740aa8a",
+        "checksumType": "sha1"
+      },
+      {
+        "hostOS": "macosx",
+        "url": "https://dl.google.com/android/repository/android-ndk-r30-beta1-darwin.zip",
+        "checksum": "61f0ae7b4b6fdb732a642560b19e7fd5680fb257",
+        "checksumType": "sha1"
+      },
+      {
+        "hostOS": "windows",
+        "url": "https://dl.google.com/android/repository/android-ndk-r30-beta1-windows.zip",
+        "checksum": "ec410335aac74d182b369a62c18079187b191149",
+        "checksumType": "sha1"
+      }
+    ]
+  },
+  "platform": 35,
+  "flexiblePageSizes": true,
+  "buildId": false,
+  "binarySha256": {
+    "arm64-v8a": "92a34011eff82ac34ca455d5a7b98eb05ea7c773f064d8d126fad300634c1eac",
+    "armeabi-v7a": "192f0326f7e40e141237ee509cf99a17fc147d38343f8fddb5cced064c02eff4",
+    "x86": "a31204ea8c45bdcdc4315a895e5db314080ca9a7e62b69e6ed8cb38c36722246",
+    "x86_64": "577b6bb2754230a44cd33c6b53a24413f3386ad4f0778241eb54492aaf7eecd3"
+  },
+  "modifications": [
+    "Retain all 18 upstream kitchen patches and its generated configuration.",
+    "Package the four Bolt ABIs; omit riscv64.",
+    "Normalize source paths with -ffile-prefix-map.",
+    "Disable path-dependent ELF build IDs; identify shipped outputs by SHA-256.",
+    "Fix AUTOCONF_TIMESTAMP to 2026-10-22 00:00:00 UTC.",
+    "Identify the banner as a Bolt source build.",
+    "Copy the pinned PCRE src/config.h into include/ for the NDK makefile."
+  ],
+  "validation": "A clean rebuild from this archive must match binarySha256; original upstream prebuilt hashes are not expected to match."
+}

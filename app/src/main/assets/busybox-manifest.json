@@ -1,20 +1,19 @@
 {
-  "source": "https://github.com/topjohnwu/Magisk",
-  "tag": "v30.7",
-  "commit": "e8a58776f1d7bdf852072ad0baa6eceb9a1e4aac",
-  "apkUrl": "https://github.com/topjohnwu/Magisk/releases/download/v30.7/Magisk-v30.7.apk",
-  "apkSha256": "e0d32d2123532860f97123d927b1bb86c4e08e6fd8a48bfc6b5bee0afae9ebd5",
+  "source": "https://github.com/trinadhthatakula/Bolt",
+  "tag": "Bolt_v1.02.0",
+  "version": "1.36.1.1 topjohnwu (Bolt source build)",
   "binarySha256": {
-    "arm64-v8a": "4d60ab3f5a59ebb2ca863f2f514e6924401b581e9b64f602665c008177626651",
-    "armeabi-v7a": "7edf6024ed2305dc7bc5d91bad6a8f0ebffbecdd41b8a861d0ced297a5ea1b6d",
-    "x86": "52def0088cd6e55a6fec699e92c5952b4539f7fb68d7be847d8a82003ed21b7b",
-    "x86_64": "060844b0769f7a50262854af027c4d6076a212d160a51309b53057cfb7122900"
+    "arm64-v8a": "92a34011eff82ac34ca455d5a7b98eb05ea7c773f064d8d126fad300634c1eac",
+    "armeabi-v7a": "192f0326f7e40e141237ee509cf99a17fc147d38343f8fddb5cced064c02eff4",
+    "x86": "a31204ea8c45bdcdc4315a895e5db314080ca9a7e62b69e6ed8cb38c36722246",
+    "x86_64": "577b6bb2754230a44cd33c6b53a24413f3386ad4f0778241eb54492aaf7eecd3"
   },
-  "version": "1.36.1.1 topjohnwu",
-  "binaryUrl": "https://github.com/topjohnwu/magisk-files/releases/download/files/busybox-1.36.1.1.zip",
-  "archiveSha256": "b4d0551feabaf314e53c79316c980e8f66432e9fb91a69dbbf10a93564b40951",
-  "busyboxSource": "https://github.com/topjohnwu/ndk-busybox",
-  "sourceBranch": "android-ndk-1.36.1",
-  "sourceCommit": "1c0ca97aafb9698ab7770ce1f67af1a84b469cdb",
-  "license": "GPL-2.0-only"
+  "binaryUrl": "https://github.com/trinadhthatakula/Bolt/releases/download/Bolt_v1.02.0/BusyBox-runtime-Bolt-1.02.0.zip",
+  "archiveSha256": "ac1f4e770599737146d7e74a413a99a9633b1a8fbe63913ed402742819d02291",
+  "sourceArchiveUrl": "https://github.com/trinadhthatakula/Bolt/releases/download/Bolt_v1.02.0/BusyBox-source-Bolt-1.02.0.tar.xz",
+  "sourceArchiveSha256": "455bda0b28b374f3a7ad3d8fa9bbaec42e4abd693392f546118cf8c3fe5a69f9",
+  "kitchenCommit": "14d189ea3070a8167b3576bf83fe070d4a3441af",
+  "ndkRevision": "30.0.14904198-beta1",
+  "license": "GPL-2.0-only",
+  "sourceCorrespondenceVerified": true
 }

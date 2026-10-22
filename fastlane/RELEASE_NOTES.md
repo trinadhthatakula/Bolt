@@ -1,8 +1,7 @@
-# Upcoming release notes
+# Bolt 1.02.0 release notes
 
-These notes and the listing screenshots describe the Cockpit development version.
-They are not the changelog of the currently published 1.01.0 APK. Assign them to the
-next version only when the maintainer prepares and signs that release.
+The complete release changelog is in [release-notes/1.02.0.md](../release-notes/1.02.0.md).
+These features ship in 1.02.0; the historic 1.01.0 APK predates the Cockpit.
 
 - A new Asgardian Cockpit with Overview, Recovery and Activity.
 - Original AnyKernel installer execution, recovery snapshots and explicit outcomes.
@@ -11,5 +10,6 @@ next version only when the maintainer prepares and signs that release.
 - Independent install completion, restart observation and user health feedback.
 - Friendly device names, Outfit/Fira Code weights and persistent appearance settings.
 
-Before shipping, complete the runtime publication and remaining hardware acceptance
-checks in [runtime.md](../docs/runtime.md) and [testing.md](../docs/testing.md).
+The release includes a verified source-built BusyBox runtime and its complete
+corresponding source/build inputs. See [runtime provenance](../docs/runtime.md) and
+[validation and remaining hardware checks](../docs/testing.md).

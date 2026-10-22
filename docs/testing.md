@@ -110,7 +110,22 @@ installer, restart the emulator or establish real post-flash kernel health.
   (0 errors, 42 warnings) passed. The owner-provided Gradle daemon criteria pin JBR 21,
   with the Foojay resolver configured for toolchain provisioning.
 
-## Pending before declaring device support or shipping a release
+## Results recorded on 2026-10-22
+
+- Version 1.02.0 (1020), target SDK 37: all 33 host tests passed; debug,
+  instrumentation and signed minified release builds passed; lint had no errors.
+- On the rooted ARM64 API 37 / 16 KiB-page emulator, all 25 instrumentation tests
+  passed after restarting the emulator's root service. Earlier failures came from
+  unavailable/unstable emulator root service; no application change was needed.
+- BusyBox was rebuilt from pinned upstream source, kitchen patches, SELinux/PCRE
+  dependencies and NDK r30-beta1. A clean extraction/rebuild of the distributed source
+  archive matched all four output SHA-256 digests. ARM64 retained the previous 358
+  applets. See [the build provenance](runtime-build-provenance.json).
+- Release APK signing verifies and uses the same certificate as the published
+  1.01.0 APK. The suite runs harmless installer fixtures and a read-only partition
+  probe; this preparation does not claim a new physical kernel flash or restore.
+
+## Remaining device-support validation
 
 - Real trusted AnyKernel packages on disposable, recoverable A/B and non-A/B devices:
   active slot, init_boot/vendor_boot/dtbo/vbmeta inventory, package-specific tool/boot
@@ -125,9 +140,9 @@ installer, restart the emulator or establish real post-flash kernel health.
 - SAF provider diversity, low/storage-exhaustion conditions, battery gates and revoked
   permissions on devices. Limits and null streams are covered with fixtures, not every
   provider implementation or storage race.
-- Complete corresponding BusyBox source/build-input publication and verified upstream
-  binary/source correspondence as described in [runtime.md](runtime.md).
+- Runtime source/build-input correspondence is now verified for the source-built
+  1.02.0 runtime; both archives accompany the release as described in [runtime.md](runtime.md).
 
 Raw-image/LKM/OTA workflows are deferred scope and are not claimed as implemented or
-validated. This PR is for review; these remaining checks must not be represented as
-successful device validation.
+validated. These remaining checks must not be represented as successful device
+validation or broad hardware compatibility.
