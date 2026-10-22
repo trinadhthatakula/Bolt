@@ -20,3 +20,5 @@ local.properties
 /jks.properties
 *.jks
 *.keystore
+*.p12
+*.pfx
