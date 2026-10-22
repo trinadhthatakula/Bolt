@@ -39,9 +39,9 @@ android {
     defaultConfig {
         applicationId = "com.valhalla.bolt"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 1010
-        versionName = "1.01.0"
+        targetSdk = 37
+        versionCode = 1020
+        versionName = "1.02.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
