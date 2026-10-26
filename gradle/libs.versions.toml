@@ -1,5 +1,5 @@
 [versions]
-agp = "9.5.0-alpha09"
+agp = "9.6.0-alpha01"
 documentfile = "1.1.0"
 kotlin = "2.4.21"
 coreKtx = "1.19.1"
@@ -9,7 +9,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
 composeBom = "2026.09.00"
-material3 = "1.5.0-beta01"
+material3 = "1.5.0-beta02"
 koinAndroid = "4.2.2"
 
 [libraries]
